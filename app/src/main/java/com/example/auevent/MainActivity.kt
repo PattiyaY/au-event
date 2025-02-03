@@ -23,8 +23,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.auevent.pages.CreatePage
 import com.example.auevent.pages.EventPage
 import com.example.auevent.pages.HomePage
