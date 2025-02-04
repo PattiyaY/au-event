@@ -73,8 +73,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ContentScreen(modifier: Modifier = Modifier, selectedItemIndex: Int) {
     when (selectedItemIndex) {
-        0 -> HomePage()
-        1 -> CreatePage()
-        2 -> EventPage()
+        0 -> HomePage(modifier)
+        1 -> CreatePage(modifier)
+        2 -> EventPage(modifier)
     }
 }
