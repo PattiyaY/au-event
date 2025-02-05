@@ -9,61 +9,46 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.example.auevent.pages.CreatePage
-import com.example.auevent.pages.EventPage
-import com.example.auevent.pages.HomePage
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.*
+import com.example.auevent.pages.*
 import com.example.auevent.ui.theme.AUEventTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            AUEventTheme {
-                val items = listOf(
-                    BottomNavigationItem("Home", Icons.Filled.Home, Icons.Outlined.Home),
-                    BottomNavigationItem("", Icons.Filled.Add, Icons.Outlined.Add),
-                    BottomNavigationItem("Event", Icons.Filled.DateRange, Icons.Outlined.DateRange)
-                )
-                var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
+            var isDarkMode by remember { mutableStateOf(false) }
+            val navController = rememberNavController()
 
+            AUEventTheme(darkTheme = isDarkMode) {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    bottomBar = {
-                        NavigationBar {
-                            items.forEachIndexed { index, item ->
-                                NavigationBarItem(
-                                    selected = selectedItemIndex == index,
-                                    onClick = { selectedItemIndex = index },
-                                    label = { Text(text = item.title) },
-                                    icon = {
-                                        Icon(
-                                            imageVector = if (selectedItemIndex == index) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = item.title
-                                        )
-                                    }
-                                )
-                            }
+                    bottomBar = { BottomNavigationBar(navController) }
+                ) { innerPadding ->
+                    NavHost(
+                        navController = navController,
+                        startDestination = "home",
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
+                        composable("home") { HomePage(navController = navController) }
+                        composable("create") { CreatePage(onBackClick = { navController.popBackStack() }) }
+                        composable("event") { EventPage() }
+                        composable("settings") {
+                            SettingPage(
+                                isDarkMode = isDarkMode,
+                                onDarkModeToggle = { isDarkMode = it }
+                            )
                         }
                     }
-                ) { innerPadding ->
-                    ContentScreen(
-                        modifier = Modifier.padding(innerPadding),
-                        selectedItemIndex
-                    )
                 }
             }
         }
@@ -71,10 +56,38 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ContentScreen(modifier: Modifier = Modifier, selectedItemIndex: Int) {
-    when (selectedItemIndex) {
-        0 -> HomePage(modifier)
-        1 -> CreatePage(modifier)
-        2 -> EventPage(modifier)
+fun BottomNavigationBar(navController: NavHostController) {
+    val items = listOf(
+        BottomNavigationItem("Home", Icons.Filled.Home, Icons.Outlined.Home, "home"),
+        BottomNavigationItem("Create", Icons.Filled.Add, Icons.Outlined.Add, "create"),
+        BottomNavigationItem("Event", Icons.Filled.DateRange, Icons.Outlined.DateRange, "event"),
+        BottomNavigationItem("Settings", Icons.Filled.Settings, Icons.Outlined.Settings, "settings")
+    )
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    NavigationBar {
+        items.forEach { item ->
+            NavigationBarItem(
+                selected = currentRoute == item.route,
+                onClick = {
+                    if (currentRoute != item.route) {
+                        navController.navigate(item.route) {
+                            launchSingleTop = true
+                            restoreState = true
+                            popUpTo("home") { saveState = true }
+                        }
+                    }
+                },
+                label = { Text(text = item.title) },
+                icon = {
+                    Icon(
+                        imageVector = if (currentRoute == item.route) item.selectedIcon else item.unselectedIcon,
+                        contentDescription = item.title
+                    )
+                }
+            )
+        }
     }
 }
