@@ -1,5 +1,7 @@
 package com.example.auevent.pages
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,15 +14,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.*
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
     var description by remember { mutableStateOf("") }
-    val categories = listOf("Festivals", "Sports", "Camp", "Social Activities", "Travel and Outdoor", "Health and Wellbeing", "Hobbies and Passions")
+    val categories = listOf(
+        "Festivals",
+        "Sports",
+        "Camp",
+        "Social Activities",
+        "Travel and Outdoor",
+        "Health and Wellbeing",
+        "Hobbies and Passions"
+    )
     var selectedCategory by remember { mutableStateOf<String?>(null) }
 
     Column(
@@ -51,19 +63,78 @@ fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Attach the image", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        val context = LocalContext.current
+
+        // States to store selected date and time
+        val selectedDate = remember { mutableStateOf("") }
+        val selectedTime = remember { mutableStateOf("") }
+
+        Row(modifier = Modifier.fillMaxWidth()) {
+            // Date Picker
+            TextField(
+                value = selectedDate.value,
+                onValueChange = {},
+                label = { Text("Select Date") },
+                enabled = false, // Disable manual input
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        val calendar = Calendar.getInstance()
+                        DatePickerDialog(
+                            context,
+                            { _, year, month, dayOfMonth ->
+                                selectedDate.value = "$dayOfMonth/${month + 1}/$year"
+                            },
+                            calendar.get(Calendar.YEAR),
+                            calendar.get(Calendar.MONTH),
+                            calendar.get(Calendar.DAY_OF_MONTH)
+                        ).show()
+                    }
+            )
+
+            // Time Picker
+            TextField(
+                value = selectedTime.value,
+                onValueChange = {},
+                label = { Text("Select Time") },
+                enabled = false, // Disable manual input
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        val calendar = Calendar.getInstance()
+                        TimePickerDialog(
+                            context,
+                            { _, hourOfDay, minute ->
+                                selectedTime.value = "$hourOfDay:$minute"
+                            },
+                            calendar.get(Calendar.HOUR_OF_DAY),
+                            calendar.get(Calendar.MINUTE),
+                            true
+                        ).show()
+                    }
+            )
+        }
+
+        Text(
+            text = "Attach an image or a video",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
         Spacer(modifier = Modifier.height(8.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            repeat(3) {
-                Box(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .background(Color.LightGray, shape = CircleShape)
-                        .clickable { },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "+", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+//            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(60.dp)
+                    .background(Color.LightGray, shape = CircleShape)
+                    .clickable {
+                        // Open image picker or perform an action
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "+", fontSize = 24.sp, fontWeight = FontWeight.Bold)
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -79,7 +150,10 @@ fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
                     fontSize = 14.sp,
                     modifier = Modifier
                         .padding(4.dp)
-                        .background(if (isSelected) Color(0xFFE91E63) else Color.LightGray, shape = RoundedCornerShape(16.dp))
+                        .background(
+                            if (isSelected) Color(0xFFE91E63) else Color.LightGray,
+                            shape = RoundedCornerShape(16.dp)
+                        )
                         .clickable { selectedCategory = category }
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     color = if (isSelected) Color.White else Color.Black
