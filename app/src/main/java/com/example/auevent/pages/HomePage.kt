@@ -1,5 +1,6 @@
 package com.example.auevent.pages
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,6 +11,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddLocation
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Settings
@@ -20,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,17 +39,32 @@ data class Event(val title: String, val imageUrl: String)
 fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+        scrimColor = Color.Transparent,
         drawerContent = {
+            Box(
+                modifier = Modifier
+                    .width(screenWidth * 0.5f) // Open half of the screen
+                    .fillMaxHeight()
+                    .background(Color.White)
+                    .padding(16.dp)
+            )
+
             DrawerContent(
                 onNavigate = { route ->
-                    if (route == "settings") {
-                        navController.navigate(route)
+                    val currentRoute = navController.currentDestination?.route
+                    if (route != currentRoute) {
+                        navController.navigate(route) {
+                            launchSingleTop = true
+                            restoreState = true
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        }
                     }
-                    scope.launch { drawerState.close() }
-                }
+                    scope.launch { drawerState.close() } // Ensure drawer closes on navigation
+                },
             )
         }
     ) {
@@ -84,12 +103,12 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
 
             // Categories Section
             Text(text = "Category", fontSize = 20.sp)
-            LazyRow {
-                items(categoryList) { category ->
-                    CategoryItem(category)
+                LazyRow {
+                    items(categories) { category ->
+                        CategoryItem(category)
+                    }
                 }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Events Sections
             Text(text = "Today's Events", fontSize = 20.sp)
@@ -105,7 +124,7 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
 fun DrawerContent(onNavigate: (String) -> Unit) {
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(0.5f)
             .padding(16.dp)
     ) {
         // User Info
@@ -121,9 +140,10 @@ fun DrawerContent(onNavigate: (String) -> Unit) {
         Spacer(modifier = Modifier.height(20.dp))
 
         // Navigation Items
+        DrawerItem("Category", Icons.Default.Category) { onNavigate("home") }
+        DrawerItem("Events", Icons.Default.AddLocation) { onNavigate("event") }
         DrawerItem("Settings", Icons.Default.Settings) { onNavigate("settings") }
-
-        Spacer(modifier = Modifier.weight(1f))
+//        Spacer(modifier = Modifier.weight(1f))
 
         // Sign Out
         DrawerItem("Sign Out", Icons.Default.Logout) { /* Handle Sign Out */ }
@@ -143,22 +163,26 @@ fun DrawerItem(text: String, icon: ImageVector, onClick: () -> Unit) {
         Spacer(modifier = Modifier.width(10.dp))
         Text(text = text, fontSize = 18.sp)
     }
-    Divider()
+//    Divider()
 }
 
 @Composable
-fun CategoryItem(name: String) {
+fun CategoryItem(category: Category) {
     Column(
         modifier = Modifier
             .padding(8.dp)
             .clip(CircleShape)
             .clickable { /* Add click event */ }
-            .background(Color(0xFFFFF1E5))
-            .padding(16.dp),
+//            .background(Color(0xFFFFF1E5))
+            .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(modifier = Modifier.size(50.dp)) { /* Placeholder for category icon */ }
-        Text(text = name, fontSize = 12.sp)
+        Image(
+            painter = painterResource(id = category.pictureRes),
+            contentDescription = "Category Image",
+            modifier = Modifier.size(50.dp)
+        )
+        Text(text = category.name, fontSize = 8.sp)
     }
 }
 
@@ -195,13 +219,15 @@ fun EventItem(event: Event) {
     }
 }
 
-// Sample Data
-val categoryList = listOf(
-    "Social Activities",
-    "Travel and Outdoor",
-    "Health and Wellbeing",
-    "Hobbies and Passions"
+data class Category(val name: String, @DrawableRes val pictureRes: Int)
+
+val categories = listOf(
+    Category("Social Activities", R.drawable.ic_social),
+    Category("Travel and Outdoor", R.drawable.ic_travel),
+    Category("Health and Wellbeing", R.drawable.ic_health),
+    Category("Hobbies and Passions", R.drawable.ic_hobbies)
 )
+
 
 val todayEvents = listOf(
     Event("AU Christmas Celebration", "https://your-image-url.com/event1.jpg"),
