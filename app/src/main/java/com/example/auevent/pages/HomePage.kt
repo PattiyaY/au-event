@@ -20,12 +20,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.bumptech.glide.Glide
 import com.example.auevent.R
+import com.example.auevent.model.Category
 import kotlinx.coroutines.launch
 
 // Event Data Model
@@ -157,7 +160,14 @@ fun CategoryItem(name: String) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(modifier = Modifier.size(50.dp)) { /* Placeholder for category icon */ }
+        Box(modifier = Modifier.size(50.dp)) {
+            AsyncImage(
+                model = "https://raw.githubusercontent.com/JanPoonthong/au-event-api/refs/heads/master/public/social-activities.png",
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
         Text(text = name, fontSize = 12.sp)
     }
 }
@@ -197,11 +207,12 @@ fun EventItem(event: Event) {
 
 // Sample Data
 val categoryList = listOf(
-    "Social Activities",
-    "Travel and Outdoor",
-    "Health and Wellbeing",
-    "Hobbies and Passions"
+    Category("Social Activities", "https://example.com/social.jpg"),
+    Category("Travel and Outdoor", "https://example.com/travel.jpg"),
+    Category("Health and Wellbeing", "https://example.com/health.jpg"),
+    Category("Hobbies and Passions", "https://example.com/hobbies.jpg")
 )
+
 
 val todayEvents = listOf(
     Event("AU Christmas Celebration", "https://your-image-url.com/event1.jpg"),

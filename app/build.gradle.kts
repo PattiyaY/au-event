@@ -75,5 +75,7 @@ dependencies {
 
     implementation(libs.androidx.material.icons.extended.v151)
 
-
+    // Glide(dispaly image by link)
+    implementation(libs.glide)
+    implementation(libs.retrofit)
 }
