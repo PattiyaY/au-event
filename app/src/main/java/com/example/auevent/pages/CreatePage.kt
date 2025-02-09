@@ -1,5 +1,6 @@
 package com.example.auevent.pages
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.foundation.background
@@ -20,10 +21,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.*
 
+@SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
     var description by remember { mutableStateOf("") }
+    val showDialog = remember{mutableStateOf(false)}
+
     val categories = listOf(
         "Social Activities",
         "Travel and Outdoor",
@@ -127,14 +131,18 @@ fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
                     .size(60.dp)
                     .background(Color.LightGray, shape = CircleShape)
                     .clickable {
-                        // Open image picker or perform an action
+                        showDialog.value = true;
                     },
                 contentAlignment = Alignment.Center
             ) {
                 Text(text = "+", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                if (showDialog.value) {
+                    alert(showDialog)
+                }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
+
 
         Text(text = "Choose the category", fontSize = 16.sp, fontWeight = FontWeight.Medium)
         Spacer(modifier = Modifier.height(8.dp))
@@ -170,4 +178,39 @@ fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
             Text(text = "Publish", fontSize = 18.sp, color = Color.White)
         }
     }
+}
+
+@Composable
+fun alert(showDialog: MutableState<Boolean>) {
+    AlertDialog(
+        title = {
+            Text(text = "Pick an option")
+        },
+        text = {
+            Column {
+                Button(onClick = {}) {
+                    Text(text = "Select Camera")
+                }
+                Button(onClick = {}) {
+                    Text(text = "Select Gallery")
+                }
+                Button(onClick = {}) {
+                    Text(text = "Select File")
+                }
+            }
+        },
+        onDismissRequest = {
+        },
+        confirmButton = {
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    showDialog.value = false
+                }
+            ) {
+                Text("Dismiss")
+            }
+        }
+    )
 }

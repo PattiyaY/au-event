@@ -182,7 +182,7 @@ fun CategoryItem(category: Category) {
             contentDescription = "Category Image",
             modifier = Modifier.size(50.dp)
         )
-        Text(text = category.name, fontSize = 8.sp)
+        Text(text = category.name, fontSize = 12.sp)
     }
 }
 
