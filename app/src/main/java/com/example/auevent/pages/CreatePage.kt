@@ -25,9 +25,6 @@ import java.util.*
 fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
     var description by remember { mutableStateOf("") }
     val categories = listOf(
-        "Festivals",
-        "Sports",
-        "Camp",
         "Social Activities",
         "Travel and Outdoor",
         "Health and Wellbeing",
