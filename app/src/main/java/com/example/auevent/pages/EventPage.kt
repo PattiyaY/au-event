@@ -32,11 +32,6 @@ fun EventPage(modifier: Modifier = Modifier) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "Menu",
-                modifier = Modifier.size(30.dp).clickable { /* Open Drawer */ }
-            )
             Text(text = "Events", fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Image(
                 painter = painterResource(id = R.drawable.profile_pic),
