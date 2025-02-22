@@ -1,28 +1,39 @@
 package com.example.auevent.repository
 
 import com.example.auevent.model.Event
-import com.example.auevent.model.EventResponse
+import com.example.auevent.model.GetEventResponse
 import com.example.auevent.model.PostEvent
+import com.example.auevent.model.PutEventResponse
 import com.example.auevent.network.ApiService
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 class EventRepository(private val apiService: ApiService) {
-    suspend fun getAllEvents(): EventResponse {
+    suspend fun getAllEvents(): GetEventResponse {
         return apiService.getAllEvents()
     }
 
-    suspend fun getTodaysEvents(): EventResponse {
+    suspend fun getTodaysEvents(): GetEventResponse {
         return apiService.getTodaysEvents()
     }
 
-    suspend fun createEvent(event: PostEvent): EventResponse {
+    suspend fun createEvent(event: PostEvent): GetEventResponse {
         return apiService.createEvent(event)
     }
 
-    suspend fun getUpcomingEvents(): EventResponse {
+    suspend fun getUpcomingEvents(): GetEventResponse {
         return apiService.getUpcomingEvents()
     }
 
-    suspend fun getHostedEvents(): EventResponse {
+    suspend fun getHostedEvents(): GetEventResponse {
         return apiService.getHostedEvents()
+    }
+
+    suspend fun deleteByID(eventId: String): PutEventResponse {
+        return apiService.deleteByID(eventId)
+    }
+
+    suspend fun updateByID(event: Event): PutEventResponse {
+        return apiService.updateByID(event)
     }
 }

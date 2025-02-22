@@ -24,6 +24,7 @@ class HomeViewModel: ViewModel() {
     fun getAllEvents() {
         viewModelScope.launch {
             try {
+                println("Inside viewModelScope")
                 val result = repository.getAllEvents()
                 if (result.success) {
                     _events.value = result.data
@@ -56,15 +57,16 @@ class HomeViewModel: ViewModel() {
     fun deleteEvent(_id: String) {
         viewModelScope.launch {
             try {
-                val result = repository.getTodaysEvents()
+                val result = repository.deleteByID(_id)
+                println(result)
                 if (result.success) {
-                    _todaysEvents.value = result.data
+                    _error.value = result.message
                 } else {
                     _error.value = "Unknown error"
                 }
 
             } catch (e: Exception) {
-                _error.value = "Error fetching today's events: ${e.message}"
+                _error.value = "Error delete event: ${e.message}"
             }
         }
     }
@@ -72,15 +74,15 @@ class HomeViewModel: ViewModel() {
     fun updateEvent(event: Event) {
         viewModelScope.launch {
             try {
-                val result = repository.getTodaysEvents()
+                val result = repository.updateByID(event)
                 if (result.success) {
-                    _todaysEvents.value = result.data
+                    _error.value = result.message
                 } else {
                     _error.value = "Unknown error"
                 }
 
             } catch (e: Exception) {
-                _error.value = "Error fetching today's events: ${e.message}"
+                _error.value = "Error update event: ${e.message}"
             }
         }
     }

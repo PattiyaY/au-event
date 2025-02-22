@@ -1,7 +1,9 @@
 package com.example.auevent.network
 
-import com.example.auevent.model.EventResponse
+import com.example.auevent.model.Event
+import com.example.auevent.model.GetEventResponse
 import com.example.auevent.model.PostEvent
+import com.example.auevent.model.PutEventResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -10,6 +12,7 @@ import io.ktor.client.request.*
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 class ApiService {
@@ -25,10 +28,10 @@ class ApiService {
         }
     }
 
-    suspend fun getAllEvents(): EventResponse {
+    suspend fun getAllEvents(): GetEventResponse {
         return try {
             client.use {
-                val response = it.get("$baseUrl/all-events").body<EventResponse>()
+                val response = it.get("$baseUrl/all-events").body<GetEventResponse>()
                 response
             }
         } catch (e: Exception) {
@@ -38,10 +41,10 @@ class ApiService {
         }
     }
 
-    suspend fun getTodaysEvents(): EventResponse {
+    suspend fun getTodaysEvents(): GetEventResponse {
         return try {
             client.use {
-                val response = it.get("$baseUrl/todays-event").body<EventResponse>()
+                val response = it.get("$baseUrl/todays-event").body<GetEventResponse>()
                 response
             }
         } catch (e: Exception) {
@@ -51,9 +54,9 @@ class ApiService {
         }
     }
 
-    suspend fun createEvent(event: PostEvent): EventResponse {
+    suspend fun createEvent(event: PostEvent): GetEventResponse {
         return try {
-            val response: EventResponse = client.post("$baseUrl/create-event") {
+            val response: GetEventResponse = client.post("$baseUrl/create-event") {
                 contentType(ContentType.Application.Json)
                 setBody(event)
             }.body()
@@ -65,9 +68,9 @@ class ApiService {
         }
     }
 
-    suspend fun getUpcomingEvents(): EventResponse {
+    suspend fun getUpcomingEvents(): GetEventResponse {
         return try {
-            val response: EventResponse = client.get("$baseUrl/upcoming-event").body<EventResponse>()
+            val response: GetEventResponse = client.get("$baseUrl/upcoming-event").body<GetEventResponse>()
             response
         } catch (e: Exception) {
             println("Error fetching upcoming events: ${e.localizedMessage}")
@@ -76,9 +79,9 @@ class ApiService {
         }
     }
 
-    suspend fun getHostedEvents(): EventResponse {
+    suspend fun getHostedEvents(): GetEventResponse {
         return try {
-            val response: EventResponse = client.get("$baseUrl/hosted-event").body<EventResponse>()
+            val response: GetEventResponse = client.get("$baseUrl/hosted-event").body<GetEventResponse>()
             response
         } catch (e: Exception) {
             println("Error fetching hosted events: ${e.localizedMessage}")
@@ -87,5 +90,34 @@ class ApiService {
         }
     }
 
-    suspend fun deleteByID(): 
+    @Serializable
+    data class DeleteEventRequest(val eventId: String)
+
+    suspend fun deleteByID(eventId: String): PutEventResponse {
+        return try {
+            val response: PutEventResponse = client.post("$baseUrl/delete-event") {
+                contentType(ContentType.Application.Json)
+                setBody(DeleteEventRequest(eventId))
+            }.body()
+            response
+        } catch (e: Exception) {
+            println("Error delete events with ID: ${e.localizedMessage}")
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    suspend fun updateByID(event: Event): PutEventResponse {
+        return try {
+            val response: PutEventResponse = client.put("$baseUrl/update-event") {
+                contentType(ContentType.Application.Json)
+                setBody(event)
+            }.body()
+            response
+        } catch (e: Exception) {
+            println("Error update event with ID: ${e.localizedMessage}")
+            e.printStackTrace()
+            throw e
+        }
+    }
 }

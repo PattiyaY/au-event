@@ -45,6 +45,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             var isDarkMode by remember { mutableStateOf(false) }
             val navController = rememberNavController()
+            val homeViewModel: HomeViewModel = viewModel()
 
             AUEventTheme(darkTheme = isDarkMode) {
                 Scaffold(
@@ -57,16 +58,18 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("home") {
-                            val homeViewModel: HomeViewModel = viewModel()
                             HomePage(
                             navController = navController,
                             homeViewModel = homeViewModel
                         ) }
+                        composable("category") {
+                            CategoryPage(
+                                navController = navController,
+                                homeViewModel = homeViewModel
+                            ) }
                         composable("create") {
-                            val homeViewModel: HomeViewModel = viewModel()
                             val createViewModel: CreateViewModel = viewModel(factory = CreateViewModelFactory(homeViewModel))
                             CreatePage(
-                            onBackClick = { navController.popBackStack() },
                             createViewModel = createViewModel,
                         ) }
                         composable(
@@ -74,7 +77,6 @@ class MainActivity : ComponentActivity() {
                             arguments = listOf(navArgument("eventId") { type = NavType.StringType })
                         ) { backStackEntry ->
                             val eventId = backStackEntry.arguments?.getString("eventId")
-                            val homeViewModel = viewModel<HomeViewModel>(navController.getBackStackEntry("home"))
                             EventDetailPage(navController=navController, eventId = eventId ?: "", homeViewModel = homeViewModel)
                         }
                         composable("event") {
@@ -117,7 +119,11 @@ fun BottomNavigationBar(navController: NavHostController) {
                         navController.navigate(item.route) {
                             launchSingleTop = true
                             restoreState = true
-                            popUpTo("home") { saveState = true }
+                            // popUpTo("home") { saveState = true }
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                                inclusive = false // Don’t pop "home" itself
+                            }
                         }
                     }
                 },

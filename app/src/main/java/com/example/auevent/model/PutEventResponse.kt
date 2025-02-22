@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class EventResponse(
+data class PutEventResponse(
     @SerialName("success") val success: Boolean,
-    @SerialName("data") val data: List<Event>
+    @SerialName("message") val message: String
 )

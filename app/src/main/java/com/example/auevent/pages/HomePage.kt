@@ -46,15 +46,15 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, homeVi
     val error by homeViewModel.error.collectAsState()
     val todaysEvents by homeViewModel.todaysEvent.collectAsState()
 
-    LaunchedEffect(Unit) {
-        println("LaunchedEffect triggered - calling getAllEvents()")
-        homeViewModel.getAllEvents()
-        homeViewModel.getTodaysEvents()
-    }
-
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+
+
+    LaunchedEffect(Unit) {
+        homeViewModel.getAllEvents()
+        homeViewModel.getTodaysEvents()
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -155,7 +155,7 @@ fun DrawerContent(onNavigate: (String) -> Unit) {
         Spacer(modifier = Modifier.height(20.dp))
 
         // Navigation Items
-        DrawerItem("Category", Icons.Default.Category) { onNavigate("home") }
+        DrawerItem("Category", Icons.Default.Category) { onNavigate("category") }
         DrawerItem("Events", Icons.Default.AddLocation) { onNavigate("event") }
         DrawerItem("Settings", Icons.Default.Settings) { onNavigate("settings") }
 //        Spacer(modifier = Modifier.weight(1f))

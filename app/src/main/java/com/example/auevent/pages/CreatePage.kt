@@ -34,7 +34,7 @@ import java.util.*
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit, createViewModel: CreateViewModel) {
+fun CreatePage(modifier: Modifier = Modifier, createViewModel: CreateViewModel) {
     val response by createViewModel.response.collectAsState()
 
     var description by remember { mutableStateOf("") }
@@ -58,10 +58,6 @@ fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit, createVie
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        IconButton(onClick = { onBackClick() }) {
-            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
-        }
-
         Text(text = "Enter event name", fontSize = 18.sp, fontWeight = FontWeight.Bold)
         OutlinedTextField(value = title, onValueChange = { title = it }, modifier = Modifier.fillMaxWidth(), placeholder = { Text("Type the event name...") })
 
