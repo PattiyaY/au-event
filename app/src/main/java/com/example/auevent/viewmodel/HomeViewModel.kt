@@ -52,4 +52,36 @@ class HomeViewModel: ViewModel() {
             }
         }
     }
+
+    fun deleteEvent(_id: String) {
+        viewModelScope.launch {
+            try {
+                val result = repository.getTodaysEvents()
+                if (result.success) {
+                    _todaysEvents.value = result.data
+                } else {
+                    _error.value = "Unknown error"
+                }
+
+            } catch (e: Exception) {
+                _error.value = "Error fetching today's events: ${e.message}"
+            }
+        }
+    }
+
+    fun updateEvent(event: Event) {
+        viewModelScope.launch {
+            try {
+                val result = repository.getTodaysEvents()
+                if (result.success) {
+                    _todaysEvents.value = result.data
+                } else {
+                    _error.value = "Unknown error"
+                }
+
+            } catch (e: Exception) {
+                _error.value = "Error fetching today's events: ${e.message}"
+            }
+        }
+    }
 }

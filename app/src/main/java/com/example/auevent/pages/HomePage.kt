@@ -127,10 +127,10 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, homeVi
 
             // Events Sections
             Text(text = "Today's Events", fontSize = 20.sp)
-            EventList(todaysEvents)
+            EventList(todaysEvents, navController)
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = "All Events", fontSize = 20.sp)
-            EventGrid(events)
+            EventGrid(events, navController)
         }
     }
 }
@@ -202,27 +202,27 @@ fun CategoryItem(category: Category) {
 }
 
 @Composable
-fun EventList(events: List<Event>) {
+fun EventList(events: List<Event>, navController: NavController ) {
     LazyRow {
         items(events) { event ->
-            HomeEventItem(event)
+            HomeEventItem(event,  navController)
         }
     }
 }
 
 @Composable
-fun EventGrid(events: List<Event>) {
+fun EventGrid(events: List<Event>, navController: NavController) {
     LazyVerticalGrid(columns = GridCells.Fixed(2)) {
         items(events.size) { index ->
-            HomeEventItem(events[index])
+            HomeEventItem(events[index],  navController)
         }
     }
 }
 
 @Composable
-fun HomeEventItem(event: Event) {
+fun HomeEventItem(event: Event,  navController: NavController) {
     Column(
-        modifier = Modifier.padding(8.dp),
+        modifier = Modifier.padding(8.dp).clickable { navController.navigate("eventDetail/${event._id}") },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AsyncImage(

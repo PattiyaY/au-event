@@ -86,4 +86,6 @@ class ApiService {
             throw e
         }
     }
+
+    suspend fun deleteByID(): 
 }

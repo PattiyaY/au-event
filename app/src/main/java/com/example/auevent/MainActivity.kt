@@ -1,9 +1,9 @@
 package com.example.auevent
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -22,7 +22,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.*
+import androidx.navigation.navArgument
 import com.example.auevent.pages.*
 import com.example.auevent.ui.theme.AUEventTheme
 import com.example.auevent.viewmodel.CreateViewModel
@@ -36,6 +38,7 @@ class CreateViewModelFactory(private val homeViewModel: HomeViewModel) : ViewMod
 }
 
 class MainActivity : ComponentActivity() {
+    @SuppressLint("UnrememberedGetBackStackEntry")
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -66,6 +69,14 @@ class MainActivity : ComponentActivity() {
                             onBackClick = { navController.popBackStack() },
                             createViewModel = createViewModel,
                         ) }
+                        composable(
+                            "eventDetail/{eventId}",
+                            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val eventId = backStackEntry.arguments?.getString("eventId")
+                            val homeViewModel = viewModel<HomeViewModel>(navController.getBackStackEntry("home"))
+                            EventDetailPage(navController=navController, eventId = eventId ?: "", homeViewModel = homeViewModel)
+                        }
                         composable("event") {
                             val eventViewModel: EventViewModel = viewModel()
                             EventPage(
