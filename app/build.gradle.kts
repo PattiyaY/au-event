@@ -1,4 +1,5 @@
 plugins {
+    kotlin("plugin.serialization") version "1.8.10"
     id("com.google.gms.google-services")
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -39,6 +40,8 @@ android {
         compose = true
     }
 }
+
+
 
 dependencies {
 
@@ -84,4 +87,18 @@ dependencies {
     // Firebase Storage
     implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
     implementation("com.google.firebase:firebase-analytics")
+
+    implementation("io.ktor:ktor-client-core:2.3.2")
+    implementation("io.ktor:ktor-client-android:2.3.2")
+    implementation("io.ktor:ktor-client-logging:2.3.2")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.2")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.2")
+    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
+    implementation("androidx.navigation:navigation-compose:2.7.4")
+    implementation("io.ktor:ktor-client-cio:2.3.0")
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("androidx.core:core-ktx:1.7.0")
+    implementation("androidx.activity:activity-ktx:1.3.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 }

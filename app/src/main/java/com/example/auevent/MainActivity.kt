@@ -3,6 +3,7 @@ package com.example.auevent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -17,13 +18,26 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.auevent.pages.*
 import com.example.auevent.ui.theme.AUEventTheme
+import com.example.auevent.viewmodel.CreateViewModel
+import com.example.auevent.viewmodel.EventViewModel
+import com.example.auevent.viewmodel.HomeViewModel
+
+class CreateViewModelFactory(private val homeViewModel: HomeViewModel) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return CreateViewModel(homeViewModel) as T
+    }
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContent {
             var isDarkMode by remember { mutableStateOf(false) }
@@ -39,9 +53,25 @@ class MainActivity : ComponentActivity() {
                         startDestination = "home",
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        composable("home") { HomePage(navController = navController) }
-                        composable("create") { CreatePage(onBackClick = { navController.popBackStack() }) }
-                        composable("event") { EventPage() }
+                        composable("home") {
+                            val homeViewModel: HomeViewModel = viewModel()
+                            HomePage(
+                            navController = navController,
+                            homeViewModel = homeViewModel
+                        ) }
+                        composable("create") {
+                            val homeViewModel: HomeViewModel = viewModel()
+                            val createViewModel: CreateViewModel = viewModel(factory = CreateViewModelFactory(homeViewModel))
+                            CreatePage(
+                            onBackClick = { navController.popBackStack() },
+                            createViewModel = createViewModel,
+                        ) }
+                        composable("event") {
+                            val eventViewModel: EventViewModel = viewModel()
+                            EventPage(
+                                eventViewModel = eventViewModel
+                            )
+                        }
                         composable("settings") {
                             SettingPage(
                                 isDarkMode = isDarkMode,

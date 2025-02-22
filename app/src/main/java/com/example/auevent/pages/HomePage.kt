@@ -30,13 +30,28 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.auevent.R
+import com.example.auevent.model.Event
+import com.example.auevent.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 // Event Data Model
-data class Event(val title: String, val imageUrl: String)
+// data class Event(val title: String, val imageUrl: String)
 
 @Composable
-fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
+fun HomePage(modifier: Modifier = Modifier, navController: NavController, homeViewModel: HomeViewModel) {
+    println("HomePage composable entered")
+    val events by homeViewModel.events.collectAsState()
+    val error by homeViewModel.error.collectAsState()
+    val todaysEvents by homeViewModel.todaysEvent.collectAsState()
+
+    LaunchedEffect(Unit) {
+        println("LaunchedEffect triggered - calling getAllEvents()")
+        homeViewModel.getAllEvents()
+        homeViewModel.getTodaysEvents()
+    }
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
@@ -112,10 +127,10 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
 
             // Events Sections
             Text(text = "Today's Events", fontSize = 20.sp)
-            EventList(todayEvents)
+            EventList(todaysEvents)
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = "All Events", fontSize = 20.sp)
-            EventGrid(allEvents)
+            EventGrid(events)
         }
     }
 }
@@ -190,7 +205,7 @@ fun CategoryItem(category: Category) {
 fun EventList(events: List<Event>) {
     LazyRow {
         items(events) { event ->
-            EventItem(event)
+            HomeEventItem(event)
         }
     }
 }
@@ -199,23 +214,23 @@ fun EventList(events: List<Event>) {
 fun EventGrid(events: List<Event>) {
     LazyVerticalGrid(columns = GridCells.Fixed(2)) {
         items(events.size) { index ->
-            EventItem(events[index])
+            HomeEventItem(events[index])
         }
     }
 }
 
 @Composable
-fun EventItem(event: Event) {
+fun HomeEventItem(event: Event) {
     Column(
         modifier = Modifier.padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AsyncImage(
-            model = event.imageUrl,
-            contentDescription = event.title,
+            model = event.imageURL,
+            contentDescription = event.name,
             modifier = Modifier.size(150.dp)
         )
-        Text(text = event.title, fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
+        Text(text = event.name, fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
     }
 }
 
@@ -229,14 +244,14 @@ val categories = listOf(
 )
 
 
-val todayEvents = listOf(
-    Event("AU Christmas Celebration", "https://your-image-url.com/event1.jpg"),
-    Event("AU Games 2024", "https://your-image-url.com/event2.jpg")
-)
-
-val allEvents = listOf(
-    Event("AU Freshly Night", "https://your-image-url.com/event3.jpg"),
-    Event("AU Charming Loy Krathong", "https://your-image-url.com/event4.jpg"),
-    Event("SLC Camp", "https://your-image-url.com/event5.jpg"),
-    Event("AU Festival 2024", "https://your-image-url.com/event6.jpg")
-)
+// val todayEvents = listOf(
+//     Event("AU Christmas Celebration", "https://your-image-url.com/event1.jpg"),
+//     Event("AU Games 2024", "https://your-image-url.com/event2.jpg")
+// )
+//
+// val allEvents = listOf(
+//     Event("AU Freshly Night", "https://your-image-url.com/event3.jpg"),
+//     Event("AU Charming Loy Krathong", "https://your-image-url.com/event4.jpg"),
+//     Event("SLC Camp", "https://your-image-url.com/event5.jpg"),
+//     Event("AU Festival 2024", "https://your-image-url.com/event6.jpg")
+// )

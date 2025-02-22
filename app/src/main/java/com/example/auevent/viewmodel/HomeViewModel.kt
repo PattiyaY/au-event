@@ -1,0 +1,55 @@
+package com.example.auevent.viewmodel
+
+import androidx.lifecycle.ViewModel
+import com.example.auevent.model.Event
+import com.example.auevent.network.ApiService
+import com.example.auevent.repository.EventRepository
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+
+class HomeViewModel: ViewModel() {
+    private val repository = EventRepository(apiService = ApiService())
+
+    private val _events = MutableStateFlow<List<Event>>(emptyList())
+    val events: StateFlow<List<Event>> = _events
+
+    private val _todaysEvents = MutableStateFlow<List<Event>>(emptyList())
+    val todaysEvent: StateFlow<List<Event>> = _todaysEvents
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    fun getAllEvents() {
+        viewModelScope.launch {
+            try {
+                val result = repository.getAllEvents()
+                if (result.success) {
+                    _events.value = result.data
+                } else {
+                    _error.value = "Unknown error"
+                }
+
+            } catch (e: Exception) {
+                _error.value = "Error fetching all events: ${e.message}"
+            }
+        }
+    }
+
+    fun getTodaysEvents() {
+        viewModelScope.launch {
+            try {
+                val result = repository.getTodaysEvents()
+                if (result.success) {
+                    _todaysEvents.value = result.data
+                } else {
+                    _error.value = "Unknown error"
+                }
+
+            } catch (e: Exception) {
+                _error.value = "Error fetching today's events: ${e.message}"
+            }
+        }
+    }
+}

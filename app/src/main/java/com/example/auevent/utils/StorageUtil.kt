@@ -3,38 +3,30 @@ package com.example.auevent.utils
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
-import com.google.firebase.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.storage
+import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
-
 class StorageUtil {
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
 
-    fun uploadToStorage(uri: Uri, context: Context, type: String) {
-        val storage = Firebase.storage
+    suspend fun uploadToStorage(uri: Uri, context: Context, type: String): String? {
         val storageRef = storage.reference
+        val uniqueImageName = UUID.randomUUID().toString()
 
-        val unique_image_name = UUID.randomUUID()
-        var spaceRef: StorageReference
-
-        if (type == "image") {
-            spaceRef = storageRef.child("images/$unique_image_name.jpg")
-        } else {
-            spaceRef = storageRef.child("videos/$unique_image_name.mp4")
+        val spaceRef: StorageReference = when (type) {
+            "image" -> storageRef.child("images/$uniqueImageName.jpg")
+            else -> storageRef.child("videos/$uniqueImageName.mp4")
         }
 
-        val byteArray: ByteArray? = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
-
-
-        byteArray?.let {
-            var uploadTask = spaceRef.putBytes(byteArray)
-            uploadTask.addOnFailureListener{
-                Toast.makeText(context, "Upload Failed", Toast.LENGTH_SHORT).show()
-            }.addOnSuccessListener { taskSnapshot ->
-                Toast.makeText(context, "Upload Successful", Toast.LENGTH_SHORT).show()
-            }
+        return try {
+            val uploadTask = spaceRef.putFile(uri).await()
+            val downloadUrl = spaceRef.downloadUrl.await().toString() // Get the download URL
+            downloadUrl
+        } catch (e: Exception) {
+            Toast.makeText(context, "Upload Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            null
         }
     }
 }

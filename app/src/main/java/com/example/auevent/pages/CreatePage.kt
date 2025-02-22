@@ -23,14 +23,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
+import com.example.auevent.model.Event
+import com.example.auevent.model.PostEvent
 import com.example.auevent.utils.StorageUtil
+import com.example.auevent.viewmodel.CreateViewModel
 import java.io.File
 import java.util.*
+
 
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
+fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit, createViewModel: CreateViewModel) {
+    val response by createViewModel.response.collectAsState()
+
     var description by remember { mutableStateOf("") }
     var title by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -63,19 +69,40 @@ fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
         OutlinedTextField(value = description, onValueChange = { description = it }, modifier = Modifier.fillMaxWidth(), placeholder = { Text("Type the description...") })
 
         Row(modifier = Modifier.fillMaxWidth()) {
-            TextField(value = selectedDate.value, onValueChange = {}, label = { Text("Select Date") }, enabled = false, modifier = Modifier.weight(1f).clickable {
-                val calendar = Calendar.getInstance()
-                DatePickerDialog(context, { _, year, month, dayOfMonth -> selectedDate.value = "$dayOfMonth/${month + 1}/$year" }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
-            })
+            TextField(value = selectedDate.value, onValueChange = {}, label = { Text("Select Date") }, enabled = false, modifier = Modifier
+                .weight(1f)
+                .clickable {
+                    val calendar = Calendar.getInstance()
+                    DatePickerDialog(
+                        context,
+                        { _, year, month, dayOfMonth ->
+                            selectedDate.value = "$dayOfMonth/${month + 1}/$year"
+                        },
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH)
+                    ).show()
+                })
 
-            TextField(value = selectedTime.value, onValueChange = {}, label = { Text("Select Time") }, enabled = false, modifier = Modifier.weight(1f).clickable {
-                val calendar = Calendar.getInstance()
-                TimePickerDialog(context, { _, hourOfDay, minute -> selectedTime.value = "$hourOfDay:$minute" }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
-            })
+            TextField(value = selectedTime.value, onValueChange = {}, label = { Text("Select Time") }, enabled = false, modifier = Modifier
+                .weight(1f)
+                .clickable {
+                    val calendar = Calendar.getInstance()
+                    TimePickerDialog(
+                        context,
+                        { _, hourOfDay, minute -> selectedTime.value = "$hourOfDay:$minute" },
+                        calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE),
+                        true
+                    ).show()
+                })
         }
 
         Text(text = "Attach an image", fontSize = 16.sp, fontWeight = FontWeight.Medium)
-        Box(modifier = Modifier.size(60.dp).background(Color.LightGray, shape = CircleShape).clickable { showDialog.value = true }, contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier
+            .size(60.dp)
+            .background(Color.LightGray, shape = CircleShape)
+            .clickable { showDialog.value = true }, contentAlignment = Alignment.Center) {
             Text(text = "+", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         }
         if (showDialog.value) {
@@ -91,7 +118,10 @@ fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
                     fontSize = 14.sp,
                     modifier = Modifier
                         .padding(4.dp)
-                        .background(if (isSelected) Color(0xFFE91E63) else Color.LightGray, shape = RoundedCornerShape(16.dp))
+                        .background(
+                            if (isSelected) Color(0xFFE91E63) else Color.LightGray,
+                            shape = RoundedCornerShape(16.dp)
+                        )
                         .clickable { selectedCategory = category }
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     color = if (isSelected) Color.White else Color.Black
@@ -113,13 +143,23 @@ fun CreatePage(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
         Button(
             onClick = {
                 if (isFormComplete) {
-                    storageUtil.uploadToStorage(selectedImageUri!!, context, "image") // Upload image
+                    val event = PostEvent(
+                        name = title,
+                        description = description,
+                        imageURL = "",
+                        date = selectedDate.value,
+                        category = selectedCategory.toString(),
+                        time = selectedTime.value,
+                    )
+                    createViewModel.createEvent(event, selectedImageUri!!, context)
                     showError = false // Hide error if form is complete
                 } else {
                     showError = true // Show error message if fields are missing
                 }
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
             colors = ButtonDefaults.buttonColors(containerColor = if (isFormComplete) Color(0xFF6A1B9A) else Color(0xFFBDBDBD)), // Change color
             shape = RoundedCornerShape(50),
             enabled = isFormComplete // Disable button when form is incomplete
