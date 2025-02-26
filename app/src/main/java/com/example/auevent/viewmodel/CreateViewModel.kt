@@ -23,7 +23,7 @@ class CreateViewModel(private val homeViewModel: HomeViewModel): ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
-    fun createEvent(event: PostEvent, imageURL: Uri, context: Context) {
+    fun createEvent(event: PostEvent, imageURL: Uri, context: Context, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
                 val imageUrl = storageUtil.uploadToStorage(imageURL, context, "image")
@@ -34,15 +34,18 @@ class CreateViewModel(private val homeViewModel: HomeViewModel): ViewModel() {
 
                     if (result.success) {
                         _response.value = result.data
-                        homeViewModel.getAllEvents()
+                        onComplete(result.success)
                     } else {
                         _error.value = "Unknown error"
+                        onComplete(false)
                     }
                 } else {
                     _error.value = "Failed to upload image"
+                    onComplete(false)
                 }
             } catch (e: Exception) {
                 _error.value = "Error creating event: ${e.message}"
+                onComplete(false)
             }
         }
     }

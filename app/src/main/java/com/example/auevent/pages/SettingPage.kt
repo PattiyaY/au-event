@@ -19,13 +19,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.auevent.R
+import com.example.auevent.model.UserData
 
 @Composable
 fun SettingPage(
     modifier: Modifier = Modifier,
     isDarkMode: Boolean,
-    onDarkModeToggle: (Boolean) -> Unit
+    onDarkModeToggle: (Boolean) -> Unit,
+    userData: UserData?,
+    onSignOut: () -> Unit
 ) {
     var selectedLanguage by remember { mutableStateOf("English") }
     var showLanguageMenu by remember { mutableStateOf(false) }
@@ -35,25 +39,26 @@ fun SettingPage(
         modifier = modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Profile Picture
-        Box(contentAlignment = Alignment.BottomEnd) {
-            Image(
-                painter = painterResource(id = R.drawable.profile_pic),
-                contentDescription = "Profile Picture",
-                modifier = Modifier.size(120.dp).clip(CircleShape)
-            )
-            Icon(
-                imageVector = Icons.Filled.CameraAlt,
-                contentDescription = "Edit Profile Picture",
-                modifier = Modifier.size(24.dp).background(Color.White, CircleShape)
-            )
+        if (userData?.profilePictureUrl != null) {
+            // Profile Picture
+            Box(contentAlignment = Alignment.BottomEnd) {
+                AsyncImage(
+                    model = userData.profilePictureUrl,
+                    contentDescription = "Profile Picture",
+                    placeholder = painterResource(R.drawable.profile_pic),
+                    error = painterResource(R.drawable.profile_pic),
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                )
+            }
         }
-        Text("Profile Photo", fontSize = 14.sp, color = Color.Gray)
-
         Spacer(modifier = Modifier.height(16.dp))
 
         // Name Field
-        SettingItem(Icons.Filled.Person, "Name", "Jan Poonthong")
+        if(userData?.userName != null) {
+            SettingItem(Icons.Filled.Person, "Name", userData.userName)
+        }
 
         // Notifications Toggle
         SwitchItem(Icons.Filled.Notifications, "Notifications", isNotificationsEnabled) {
@@ -106,7 +111,7 @@ fun SettingPage(
 
         // Sign Out Button
         Button(
-            onClick = { /* Sign out logic */ },
+            onClick = onSignOut,
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A1B9A)),
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(24.dp)

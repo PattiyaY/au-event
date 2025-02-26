@@ -2,8 +2,12 @@ package com.example.auevent
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -20,6 +24,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -30,6 +36,9 @@ import com.example.auevent.ui.theme.AUEventTheme
 import com.example.auevent.viewmodel.CreateViewModel
 import com.example.auevent.viewmodel.EventViewModel
 import com.example.auevent.viewmodel.HomeViewModel
+import com.example.auevent.viewmodel.SignInViewModel
+import com.google.android.gms.auth.api.identity.Identity
+import kotlinx.coroutines.launch
 
 class CreateViewModelFactory(private val homeViewModel: HomeViewModel) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -38,6 +47,12 @@ class CreateViewModelFactory(private val homeViewModel: HomeViewModel) : ViewMod
 }
 
 class MainActivity : ComponentActivity() {
+    private val googleAuthUiClient by lazy {
+        GoogleAuthUiClient(
+            context = applicationContext,
+            oneTapClient = Identity.getSignInClient(applicationContext)
+        )
+    }
     @SuppressLint("UnrememberedGetBackStackEntry")
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -46,17 +61,67 @@ class MainActivity : ComponentActivity() {
             var isDarkMode by remember { mutableStateOf(false) }
             val navController = rememberNavController()
             val homeViewModel: HomeViewModel = viewModel()
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = navBackStackEntry?.destination?.route
 
             AUEventTheme(darkTheme = isDarkMode) {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    bottomBar = { BottomNavigationBar(navController) }
+                    bottomBar = {
+                        if (currentRoute != "sign_in") { // Hide bottom bar on Sign In screen
+                            BottomNavigationBar(navController)
+                        }
+                    }
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "home",
+                        startDestination = "sign_in",
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        composable("sign_in") {
+                            val viewModel = viewModel<SignInViewModel>()
+                            val state by viewModel.state.collectAsStateWithLifecycle()
+
+                            LaunchedEffect(key1 = Unit) {
+                                if(googleAuthUiClient.getSignedInUser() != null) {
+                                    navController.navigate("home")
+                                }
+                            }
+
+                            val launcher = rememberLauncherForActivityResult(
+                                contract = ActivityResultContracts.StartIntentSenderForResult(),
+                                onResult = { result ->
+                                    if (result.resultCode == RESULT_OK) {
+                                        lifecycleScope.launch {
+                                            val signInResult = googleAuthUiClient.signInWithIntent(intent = result.data ?: return@launch)
+                                            viewModel.onSignInResult(signInResult)
+                                        }
+                                    }
+                                    }
+                            )
+                            LaunchedEffect(key1 = state.isSignInSuccessful) {
+                                if(state.isSignInSuccessful) {
+                                    Toast.makeText(
+                                        applicationContext,
+                                        "Sign in successful",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+
+                                    navController.navigate("home")
+                                    viewModel.resetState()
+                                }
+                            }
+                            SignInPage(state = state, onSignInClick = {
+                                lifecycleScope.launch {
+                                    val signInIntentSender = googleAuthUiClient.signIn()
+                                    launcher.launch(
+                                        IntentSenderRequest.Builder(
+                                            signInIntentSender ?: return@launch
+                                    ).build()
+                                    )
+                                }
+                            })
+                        }
                         composable("home") {
                             HomePage(
                             navController = navController,
@@ -77,8 +142,9 @@ class MainActivity : ComponentActivity() {
                         composable("create") {
                             val createViewModel: CreateViewModel = viewModel(factory = CreateViewModelFactory(homeViewModel))
                             CreatePage(
-                            createViewModel = createViewModel,
-                        ) }
+                                createViewModel = createViewModel,
+                                navController = navController,
+                            ) }
                         composable(
                             "eventDetail/{eventId}",
                             arguments = listOf(navArgument("eventId") { type = NavType.StringType })
@@ -95,7 +161,20 @@ class MainActivity : ComponentActivity() {
                         composable("settings") {
                             SettingPage(
                                 isDarkMode = isDarkMode,
-                                onDarkModeToggle = { isDarkMode = it }
+                                onDarkModeToggle = { isDarkMode = it },
+                                userData = googleAuthUiClient.getSignedInUser(),
+                                onSignOut = {
+                                    lifecycleScope.launch {
+                                        googleAuthUiClient.signOut()
+                                        Toast.makeText(
+                                            applicationContext,
+                                            "Signed out",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+
+                                        navController.popBackStack()
+                                    }
+                                },
                             )
                         }
                     }

@@ -56,6 +56,8 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, homeVi
         homeViewModel.getTodaysEvents()
     }
 
+    println(events)
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         scrimColor = Color.Transparent,
