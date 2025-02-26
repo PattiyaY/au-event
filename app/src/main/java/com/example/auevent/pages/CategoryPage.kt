@@ -41,25 +41,25 @@ fun CategoryPage(navController: NavController, homeViewModel: HomeViewModel) {
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyVerticalGrid(
-            columns = GridCells.Fixed(2), // 2 columns for 2x2 grid
+            columns = GridCells.Fixed(2),
             modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp), // Space between columns
-            verticalArrangement = Arrangement.spacedBy(8.dp)   // Space between rows
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(categories) { category ->
-                CategoryItemOnCategoryPage(category)
+                CategoryItemOnCategoryPage(category, navController)
             }
         }
     }
 }
 
 @Composable
-fun CategoryItemOnCategoryPage(category: Category) {
+fun CategoryItemOnCategoryPage(category: Category, navController: NavController) {
     Column(
         modifier = Modifier
             .padding(8.dp)
             .clip(CircleShape)
-            .clickable { /* Add click event later if needed */ }
+            .clickable { navController.navigate("categoryEventsPage/${category.name}") } // Navigate with category name
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

@@ -9,6 +9,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
 class EventRepository(private val apiService: ApiService) {
+    suspend fun getEventsByCategory(categoryName: String): GetEventResponse {
+        return apiService.getEventsByCategory(categoryName)
+    }
     suspend fun getAllEvents(): GetEventResponse {
         return apiService.getAllEvents()
     }

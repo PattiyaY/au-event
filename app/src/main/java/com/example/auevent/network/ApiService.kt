@@ -28,6 +28,19 @@ class ApiService {
         }
     }
 
+    suspend fun getEventsByCategory(categoryName: String): GetEventResponse {
+        return try {
+            client.use {
+                val response = it.get("$baseUrl/category?categoryName=$categoryName").body<GetEventResponse>()
+                response
+            }
+        } catch (e: Exception) {
+            println("Error fetching events: ${e.localizedMessage}")
+            e.printStackTrace()  // Prints full error trace for debugging
+            throw e
+        }
+    }
+
     suspend fun getAllEvents(): GetEventResponse {
         return try {
             client.use {

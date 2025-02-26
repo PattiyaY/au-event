@@ -5,6 +5,7 @@ import com.example.auevent.model.Event
 import com.example.auevent.network.ApiService
 import com.example.auevent.repository.EventRepository
 import androidx.lifecycle.viewModelScope
+import com.example.auevent.model.GetEventResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -20,6 +21,11 @@ class HomeViewModel: ViewModel() {
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
+
+    suspend fun getEventsByCategory(categoryName: String): GetEventResponse {
+        println("categoryName: $categoryName")
+        return repository.getEventsByCategory(categoryName)
+    }
 
     fun getAllEvents() {
         viewModelScope.launch {

@@ -117,13 +117,13 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, homeVi
             Spacer(modifier = Modifier.height(16.dp))
 
             // Categories Section
-            Text(text = "Category", fontSize = 20.sp)
-                LazyRow {
-                    items(categories) { category ->
-                        CategoryItem(category)
-                    }
-                }
-            Spacer(modifier = Modifier.height(8.dp))
+            // Text(text = "Category", fontSize = 20.sp)
+            //     LazyRow {
+            //         items(categories) { category ->
+            //             CategoryItem(category)
+            //         }
+            //     }
+            // Spacer(modifier = Modifier.height(8.dp))
 
             // Events Sections
             Text(text = "Today's Events", fontSize = 20.sp)

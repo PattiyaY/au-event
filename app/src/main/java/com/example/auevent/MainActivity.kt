@@ -67,6 +67,13 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 homeViewModel = homeViewModel
                             ) }
+                        composable(
+                            "categoryEventsPage/{categoryName}",
+                            arguments = listOf(navArgument("categoryName") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val categoryName = backStackEntry.arguments?.getString("categoryName")
+                            CategoryEventsPage(navController=navController, categoryName = categoryName ?: "", homeViewModel = homeViewModel)
+                        }
                         composable("create") {
                             val createViewModel: CreateViewModel = viewModel(factory = CreateViewModelFactory(homeViewModel))
                             CreatePage(
