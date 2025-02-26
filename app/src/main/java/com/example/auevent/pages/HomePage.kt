@@ -30,16 +30,31 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.auevent.R
+import com.example.auevent.model.Event
+import com.example.auevent.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 // Event Data Model
-data class Event(val title: String, val imageUrl: String)
+// data class Event(val title: String, val imageUrl: String)
 
 @Composable
-fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
+fun HomePage(modifier: Modifier = Modifier, navController: NavController, homeViewModel: HomeViewModel) {
+    println("HomePage composable entered")
+    val events by homeViewModel.events.collectAsState()
+    val error by homeViewModel.error.collectAsState()
+    val todaysEvents by homeViewModel.todaysEvent.collectAsState()
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+
+
+    LaunchedEffect(Unit) {
+        homeViewModel.getAllEvents()
+        homeViewModel.getTodaysEvents()
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -102,20 +117,20 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             // Categories Section
-            Text(text = "Category", fontSize = 20.sp)
-                LazyRow {
-                    items(categories) { category ->
-                        CategoryItem(category)
-                    }
-                }
-            Spacer(modifier = Modifier.height(8.dp))
+            // Text(text = "Category", fontSize = 20.sp)
+            //     LazyRow {
+            //         items(categories) { category ->
+            //             CategoryItem(category)
+            //         }
+            //     }
+            // Spacer(modifier = Modifier.height(8.dp))
 
             // Events Sections
             Text(text = "Today's Events", fontSize = 20.sp)
-            EventList(todayEvents)
+            EventList(todaysEvents, navController)
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = "All Events", fontSize = 20.sp)
-            EventGrid(allEvents)
+            EventGrid(events, navController)
         }
     }
 }
@@ -140,7 +155,7 @@ fun DrawerContent(onNavigate: (String) -> Unit) {
         Spacer(modifier = Modifier.height(20.dp))
 
         // Navigation Items
-        DrawerItem("Category", Icons.Default.Category) { onNavigate("home") }
+        DrawerItem("Category", Icons.Default.Category) { onNavigate("category") }
         DrawerItem("Events", Icons.Default.AddLocation) { onNavigate("event") }
         DrawerItem("Settings", Icons.Default.Settings) { onNavigate("settings") }
 //        Spacer(modifier = Modifier.weight(1f))
@@ -182,40 +197,40 @@ fun CategoryItem(category: Category) {
             contentDescription = "Category Image",
             modifier = Modifier.size(50.dp)
         )
-        Text(text = category.name, fontSize = 8.sp)
+        Text(text = category.name, fontSize = 12.sp)
     }
 }
 
 @Composable
-fun EventList(events: List<Event>) {
+fun EventList(events: List<Event>, navController: NavController ) {
     LazyRow {
         items(events) { event ->
-            EventItem(event)
+            HomeEventItem(event,  navController)
         }
     }
 }
 
 @Composable
-fun EventGrid(events: List<Event>) {
+fun EventGrid(events: List<Event>, navController: NavController) {
     LazyVerticalGrid(columns = GridCells.Fixed(2)) {
         items(events.size) { index ->
-            EventItem(events[index])
+            HomeEventItem(events[index],  navController)
         }
     }
 }
 
 @Composable
-fun EventItem(event: Event) {
+fun HomeEventItem(event: Event,  navController: NavController) {
     Column(
-        modifier = Modifier.padding(8.dp),
+        modifier = Modifier.padding(8.dp).clickable { navController.navigate("eventDetail/${event._id}") },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AsyncImage(
-            model = event.imageUrl,
-            contentDescription = event.title,
+            model = event.imageURL,
+            contentDescription = event.name,
             modifier = Modifier.size(150.dp)
         )
-        Text(text = event.title, fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
+        Text(text = event.name, fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
     }
 }
 
@@ -229,14 +244,14 @@ val categories = listOf(
 )
 
 
-val todayEvents = listOf(
-    Event("AU Christmas Celebration", "https://your-image-url.com/event1.jpg"),
-    Event("AU Games 2024", "https://your-image-url.com/event2.jpg")
-)
-
-val allEvents = listOf(
-    Event("AU Freshly Night", "https://your-image-url.com/event3.jpg"),
-    Event("AU Charming Loy Krathong", "https://your-image-url.com/event4.jpg"),
-    Event("SLC Camp", "https://your-image-url.com/event5.jpg"),
-    Event("AU Festival 2024", "https://your-image-url.com/event6.jpg")
-)
+// val todayEvents = listOf(
+//     Event("AU Christmas Celebration", "https://your-image-url.com/event1.jpg"),
+//     Event("AU Games 2024", "https://your-image-url.com/event2.jpg")
+// )
+//
+// val allEvents = listOf(
+//     Event("AU Freshly Night", "https://your-image-url.com/event3.jpg"),
+//     Event("AU Charming Loy Krathong", "https://your-image-url.com/event4.jpg"),
+//     Event("SLC Camp", "https://your-image-url.com/event5.jpg"),
+//     Event("AU Festival 2024", "https://your-image-url.com/event6.jpg")
+// )

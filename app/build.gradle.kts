@@ -1,4 +1,6 @@
 plugins {
+    kotlin("plugin.serialization") version "1.8.10"
+    id("com.google.gms.google-services")
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
@@ -39,6 +41,8 @@ android {
     }
 }
 
+
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -49,6 +53,11 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.firebase.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -75,5 +84,28 @@ dependencies {
 
     implementation(libs.androidx.material.icons.extended.v151)
 
+    // Glide(dispaly image by link)
+    implementation(libs.glide)
+    implementation(libs.retrofit)
 
+    // Firebase Storage
+    implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
+    implementation("com.google.firebase:firebase-analytics")
+
+    implementation("io.ktor:ktor-client-core:2.3.2")
+    implementation("io.ktor:ktor-client-android:2.3.2")
+    implementation("io.ktor:ktor-client-logging:2.3.2")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.2")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.2")
+    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
+    implementation("androidx.navigation:navigation-compose:2.7.4")
+    implementation("io.ktor:ktor-client-cio:2.3.0")
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("androidx.core:core-ktx:1.7.0")
+    implementation("androidx.activity:activity-ktx:1.3.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
+    implementation("com.google.firebase:firebase-auth-ktx:21.1.0")
+    implementation("com.google.android.gms:play-services-auth:20.4.1")
 }
