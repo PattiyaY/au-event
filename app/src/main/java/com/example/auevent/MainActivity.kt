@@ -125,7 +125,8 @@ class MainActivity : ComponentActivity() {
                         composable("home") {
                             HomePage(
                             navController = navController,
-                            homeViewModel = homeViewModel
+                            homeViewModel = homeViewModel,
+                            userData = googleAuthUiClient.getSignedInUser(),
                         ) }
                         composable("category") {
                             CategoryPage(
@@ -155,7 +156,8 @@ class MainActivity : ComponentActivity() {
                         composable("event") {
                             val eventViewModel: EventViewModel = viewModel()
                             EventPage(
-                                eventViewModel = eventViewModel
+                                eventViewModel = eventViewModel,
+                                userData = googleAuthUiClient.getSignedInUser()
                             )
                         }
                         composable("settings") {

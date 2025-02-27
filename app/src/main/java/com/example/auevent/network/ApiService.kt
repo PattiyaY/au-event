@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 class ApiService {
-    private val baseUrl = "http://192.168.80.150:3000/api"
+    private val baseUrl = "http://192.168.30.150:3000/api"
 
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) {
