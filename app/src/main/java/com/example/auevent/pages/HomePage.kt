@@ -1,5 +1,6 @@
 package com.example.auevent.pages
 
+import android.content.Intent
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,8 +28,12 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.auevent.MusicService
 import com.example.auevent.R
 import com.example.auevent.model.Event
 import com.example.auevent.model.UserData
@@ -45,16 +50,15 @@ fun HomePage(
     homeViewModel: HomeViewModel,
     userData: UserData?
 ) {
-    println("HomePage composable entered")
     val events by homeViewModel.events.collectAsState()
     val error by homeViewModel.error.collectAsState()
-    val todaysEvents by homeViewModel.todaysEvent.collectAsState()
+    val todaysEvents by homeViewModel.todaysEvents.collectAsState()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
-
+    // Use LaunchedEffect for composable-scoped coroutines
     LaunchedEffect(Unit) {
         homeViewModel.getAllEvents()
         homeViewModel.getTodaysEvents()

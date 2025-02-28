@@ -23,8 +23,9 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import com.example.auevent.model.PostEvent
+import com.example.auevent.sendNotification
 import com.example.auevent.utils.StorageUtil
-import com.example.auevent.viewmodel.CreateViewModel
+import com.example.auevent.viewmodel.HomeViewModel
 import java.io.File
 import java.util.*
 
@@ -32,8 +33,8 @@ import java.util.*
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun CreatePage(modifier: Modifier = Modifier, createViewModel: CreateViewModel, navController: NavController) {
-    val response by createViewModel.response.collectAsState()
+fun CreatePage(modifier: Modifier = Modifier, homeViewModel: HomeViewModel, navController: NavController) {
+    val response by homeViewModel.response.collectAsState()
 
     var description by remember { mutableStateOf("") }
     var title by remember { mutableStateOf("") }
@@ -145,16 +146,20 @@ fun CreatePage(modifier: Modifier = Modifier, createViewModel: CreateViewModel, 
                         category = selectedCategory.toString(),
                         time = selectedTime.value,
                     )
-                    createViewModel.createEvent(event, selectedImageUri!!, context) { success ->
+
+                    homeViewModel.createEvent(event, selectedImageUri!!, context) { success ->
                         if (success) {
+                            println("HERE")
+                            sendNotification(context, "Event Published", "Your event '$title' has been successfully published!")
+
                             navController.navigate("home") {
                                 popUpTo("home") { inclusive = true } // Removes create event from back stack
                             }
                         }
                     }
-                    showError = false // Hide error if form is complete
+                    showError = false
                 } else {
-                    showError = true // Show error message if fields are missing
+                    showError = true
                 }
             },
             modifier = Modifier

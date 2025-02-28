@@ -1,6 +1,8 @@
 package com.example.auevent
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -8,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -22,10 +25,12 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -33,36 +38,47 @@ import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.example.auevent.pages.*
 import com.example.auevent.ui.theme.AUEventTheme
-import com.example.auevent.viewmodel.CreateViewModel
 import com.example.auevent.viewmodel.EventViewModel
 import com.example.auevent.viewmodel.HomeViewModel
 import com.example.auevent.viewmodel.SignInViewModel
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
 
-class CreateViewModelFactory(private val homeViewModel: HomeViewModel) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return CreateViewModel(homeViewModel) as T
-    }
-}
-
 class MainActivity : ComponentActivity() {
+
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
             context = applicationContext,
             oneTapClient = Identity.getSignInClient(applicationContext)
         )
     }
-    @SuppressLint("UnrememberedGetBackStackEntry")
+    @SuppressLint("UnrememberedGetBackStackEntry", "CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+
+        // Create a proper LifecycleScope for HomeViewModel
+        val homeViewModel: HomeViewModel by viewModels()
+
+        // lifecycleScope.launch {
+        //     homeViewModel.getAllEvents()
+        //     homeViewModel.getTodaysEvents()
+        // }
+
         setContent {
             var isDarkMode by remember { mutableStateOf(false) }
             val navController = rememberNavController()
-            val homeViewModel: HomeViewModel = viewModel()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
+
+            val musicServiceIntent = Intent(this, MusicService::class.java)
+            startService(musicServiceIntent)
+
+            // Launch data loading in proper lifecycle scope
+            // LaunchedEffect(key1 = Unit) {
+            //     homeViewModel.getAllEvents()
+            //     homeViewModel.getTodaysEvents()
+            // }
 
             AUEventTheme(darkTheme = isDarkMode) {
                 Scaffold(
@@ -75,7 +91,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "sign_in",
+                        startDestination = "home",
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("sign_in") {
@@ -141,9 +157,10 @@ class MainActivity : ComponentActivity() {
                             CategoryEventsPage(navController=navController, categoryName = categoryName ?: "", homeViewModel = homeViewModel)
                         }
                         composable("create") {
-                            val createViewModel: CreateViewModel = viewModel(factory = CreateViewModelFactory(homeViewModel))
+                            // val createViewModel: CreateViewModel = viewModel(factory = CreateViewModelFactory(homeViewModel))
+                            val homeViewModel: HomeViewModel = viewModel()
                             CreatePage(
-                                createViewModel = createViewModel,
+                                homeViewModel = homeViewModel,
                                 navController = navController,
                             ) }
                         composable(
@@ -210,7 +227,7 @@ fun BottomNavigationBar(navController: NavHostController) {
                             // popUpTo("home") { saveState = true }
                             popUpTo(navController.graph.startDestinationId) {
                                 saveState = true
-                                inclusive = false // Don’t pop "home" itself
+                                // inclusive = false // Don’t pop "home" itself
                             }
                         }
                     }
