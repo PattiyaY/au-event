@@ -37,7 +37,7 @@ class EventRepository(private val apiService: ApiService) {
         return apiService.deleteByID(eventId)
     }
 
-    suspend fun updateByID(event: Event): PutEventResponse {
-        return apiService.updateByID(event)
+    suspend fun updateByID(eventId: String, event: Event): PutEventResponse {
+        return apiService.updateByID(eventId, event)
     }
 }

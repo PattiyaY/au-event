@@ -13,6 +13,7 @@ import io.ktor.client.request.*
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -115,11 +116,17 @@ class ApiService {
         }
     }
 
-    suspend fun updateByID(event: Event): PutEventResponse {
+    @Serializable
+    data class UpdateEventRequest(
+        @SerialName("eventId") val eventId: String,
+        @SerialName("updateData") val event: Event
+    )
+    suspend fun updateByID(eventId: String, event: Event): PutEventResponse {
         return try {
+            val ob = UpdateEventRequest(eventId, event)
             val response: PutEventResponse = client.put("$baseUrl/update-event") {
                 contentType(ContentType.Application.Json)
-                setBody(event)
+                setBody(ob)
             }.body()
             response
         } catch (e: Exception) {

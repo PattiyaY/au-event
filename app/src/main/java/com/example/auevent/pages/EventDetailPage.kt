@@ -60,7 +60,8 @@ fun EventDetailPage(
         Button(
             onClick = {
                 val updatedEvent = event.copy(name = name)
-                homeViewModel.updateEvent(updatedEvent) // Implement this in ViewModel
+                println(updatedEvent)
+                homeViewModel.updateEvent(eventId, updatedEvent) // Implement this in ViewModel
                 navController.popBackStack() // Go back after update
             },
             modifier = Modifier.fillMaxWidth()

@@ -83,10 +83,10 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    fun updateEvent(event: Event) {
+    fun updateEvent(eventId: String, event: Event) {
         viewModelScope.launch {
             try {
-                val result: PutEventResponse = apiService.updateByID(event)
+                val result: PutEventResponse = apiService.updateByID(eventId, event)
                 if (result.success) {
                     _error.value = result.message
                 } else {
