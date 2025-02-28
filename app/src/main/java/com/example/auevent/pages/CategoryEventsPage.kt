@@ -22,10 +22,15 @@ fun CategoryEventsPage(navController: NavController, homeViewModel: HomeViewMode
 
     val scope = rememberCoroutineScope()
 
+    // LaunchedEffect(categoryName) {
+    //     scope.launch {
+    //         homeViewModel.getEventsByCategory(categoryName)
+    //     }
+    // }
+
     LaunchedEffect(categoryName) {
-        scope.launch {
-            homeViewModel.getEventsByCategory(categoryName)
-        }
+        homeViewModel.getEventsByCategory(categoryName)
+        println("Fetching events for: $categoryName")
     }
 
     Column(
