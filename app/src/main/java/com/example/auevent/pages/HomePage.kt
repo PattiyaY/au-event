@@ -1,5 +1,6 @@
 package com.example.auevent.pages
 
+import android.content.Intent
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,34 +28,43 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.auevent.MusicService
 import com.example.auevent.R
 import com.example.auevent.model.Event
+import com.example.auevent.model.UserData
 import com.example.auevent.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 
 // Event Data Model
 // data class Event(val title: String, val imageUrl: String)
 
 @Composable
-fun HomePage(modifier: Modifier = Modifier, navController: NavController, homeViewModel: HomeViewModel) {
-    println("HomePage composable entered")
+fun HomePage(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    homeViewModel: HomeViewModel,
+    userData: UserData?
+) {
     val events by homeViewModel.events.collectAsState()
     val error by homeViewModel.error.collectAsState()
-    val todaysEvents by homeViewModel.todaysEvent.collectAsState()
+    val todaysEvents by homeViewModel.todaysEvents.collectAsState()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
-
+    // Use LaunchedEffect for composable-scoped coroutines
     LaunchedEffect(Unit) {
         homeViewModel.getAllEvents()
         homeViewModel.getTodaysEvents()
     }
+
+    println(events)
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -69,6 +79,7 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, homeVi
             )
 
             DrawerContent(
+                userData = userData,
                 onNavigate = { route ->
                     val currentRoute = navController.currentDestination?.route
                     if (route != currentRoute) {
@@ -103,15 +114,20 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, homeVi
                 )
                 Text(text = "Home", fontSize = 24.sp)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "Jan Poonthong", fontSize = 14.sp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Image(
-                        painter = painterResource(id = R.drawable.profile_pic),
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                    )
+                    if (userData?.userName != null && userData.profilePictureUrl != null) {
+                        Text(text = userData.userName, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        AsyncImage(
+                            model = userData.profilePictureUrl,
+                            contentDescription = "Profile Picture",
+                            placeholder = painterResource(R.drawable.profile_pic),
+                            error = painterResource(R.drawable.profile_pic),
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                        )
+
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -136,7 +152,7 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, homeVi
 }
 
 @Composable
-fun DrawerContent(onNavigate: (String) -> Unit) {
+fun DrawerContent(userData: UserData?, onNavigate: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize(0.5f)
@@ -144,13 +160,19 @@ fun DrawerContent(onNavigate: (String) -> Unit) {
     ) {
         // User Info
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(id = R.drawable.profile_pic),
-                contentDescription = "Profile Picture",
-                modifier = Modifier.size(50.dp).clip(CircleShape)
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(text = "Jan Poonthong", fontSize = 18.sp)
+            if (userData?.userName != null && userData.profilePictureUrl != null) {
+                AsyncImage(
+                    model = userData.profilePictureUrl,
+                    contentDescription = "Profile Picture",
+                    placeholder = painterResource(R.drawable.profile_pic),
+                    error = painterResource(R.drawable.profile_pic),
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(text = userData.userName, fontSize = 18.sp)
+            }
         }
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -161,7 +183,7 @@ fun DrawerContent(onNavigate: (String) -> Unit) {
 //        Spacer(modifier = Modifier.weight(1f))
 
         // Sign Out
-        DrawerItem("Sign Out", Icons.Default.Logout) { /* Handle Sign Out */ }
+        // DrawerItem("Sign Out", Icons.Default.Logout) { /* Handle Sign Out */ }
     }
 }
 

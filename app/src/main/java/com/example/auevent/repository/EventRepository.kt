@@ -1,5 +1,6 @@
 package com.example.auevent.repository
 
+import com.example.auevent.model.CreateEventResponse
 import com.example.auevent.model.Event
 import com.example.auevent.model.GetEventResponse
 import com.example.auevent.model.PostEvent
@@ -20,7 +21,7 @@ class EventRepository(private val apiService: ApiService) {
         return apiService.getTodaysEvents()
     }
 
-    suspend fun createEvent(event: PostEvent): GetEventResponse {
+    suspend fun createEvent(event: PostEvent): CreateEventResponse {
         return apiService.createEvent(event)
     }
 
@@ -36,7 +37,7 @@ class EventRepository(private val apiService: ApiService) {
         return apiService.deleteByID(eventId)
     }
 
-    suspend fun updateByID(event: Event): PutEventResponse {
-        return apiService.updateByID(event)
+    suspend fun updateByID(eventId: String, event: Event): PutEventResponse {
+        return apiService.updateByID(eventId, event)
     }
 }

@@ -19,12 +19,14 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.auevent.R
 import com.example.auevent.model.Event
+import com.example.auevent.model.UserData
 import com.example.auevent.viewmodel.EventViewModel
 
 @Composable
 fun EventPage(
     modifier: Modifier = Modifier,
-    eventViewModel: EventViewModel
+    eventViewModel: EventViewModel,
+    userData: UserData?
 ) {
     var selectedTab by remember { mutableStateOf(0) }
 
@@ -49,13 +51,17 @@ fun EventPage(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(text = "Events", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Image(
-                painter = painterResource(id = R.drawable.profile_pic),
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-            )
+            if (userData?.profilePictureUrl != null) {
+                AsyncImage(
+                    model = userData?.profilePictureUrl,
+                    contentDescription = "Profile Picture",
+                    placeholder = painterResource(R.drawable.profile_pic),
+                    error = painterResource(R.drawable.profile_pic),
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                )
+            }
         }
         Spacer(modifier = Modifier.height(16.dp))
 

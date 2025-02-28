@@ -1,5 +1,6 @@
 package com.example.auevent.network
 
+import com.example.auevent.model.CreateEventResponse
 import com.example.auevent.model.Event
 import com.example.auevent.model.GetEventResponse
 import com.example.auevent.model.PostEvent
@@ -12,11 +13,12 @@ import io.ktor.client.request.*
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 class ApiService {
-    private val baseUrl = "http://192.168.80.150:3000/api"
+    private val baseUrl = "http://192.168.213.150:3000/api"
 
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -30,10 +32,8 @@ class ApiService {
 
     suspend fun getEventsByCategory(categoryName: String): GetEventResponse {
         return try {
-            client.use {
-                val response = it.get("$baseUrl/category?categoryName=$categoryName").body<GetEventResponse>()
-                response
-            }
+            val response = client.get("$baseUrl/category?categoryName=$categoryName").body<GetEventResponse>()
+            response
         } catch (e: Exception) {
             println("Error fetching events: ${e.localizedMessage}")
             e.printStackTrace()  // Prints full error trace for debugging
@@ -43,10 +43,8 @@ class ApiService {
 
     suspend fun getAllEvents(): GetEventResponse {
         return try {
-            client.use {
-                val response = it.get("$baseUrl/all-events").body<GetEventResponse>()
-                response
-            }
+            val response = client.get("$baseUrl/all-events").body<GetEventResponse>()
+            response
         } catch (e: Exception) {
             println("Error fetching events: ${e.localizedMessage}")
             e.printStackTrace()  // Prints full error trace for debugging
@@ -56,10 +54,8 @@ class ApiService {
 
     suspend fun getTodaysEvents(): GetEventResponse {
         return try {
-            client.use {
-                val response = it.get("$baseUrl/todays-event").body<GetEventResponse>()
-                response
-            }
+            val response = client.get("$baseUrl/todays-event").body<GetEventResponse>()
+            response
         } catch (e: Exception) {
             println("Error fetching events: ${e.localizedMessage}")
             e.printStackTrace()  // Prints full error trace for debugging
@@ -67,9 +63,9 @@ class ApiService {
         }
     }
 
-    suspend fun createEvent(event: PostEvent): GetEventResponse {
+    suspend fun createEvent(event: PostEvent): CreateEventResponse {
         return try {
-            val response: GetEventResponse = client.post("$baseUrl/create-event") {
+            val response: CreateEventResponse = client.post("$baseUrl/create-event") {
                 contentType(ContentType.Application.Json)
                 setBody(event)
             }.body()
@@ -120,11 +116,17 @@ class ApiService {
         }
     }
 
-    suspend fun updateByID(event: Event): PutEventResponse {
+    @Serializable
+    data class UpdateEventRequest(
+        @SerialName("eventId") val eventId: String,
+        @SerialName("updateData") val event: Event
+    )
+    suspend fun updateByID(eventId: String, event: Event): PutEventResponse {
         return try {
+            val ob = UpdateEventRequest(eventId, event)
             val response: PutEventResponse = client.put("$baseUrl/update-event") {
                 contentType(ContentType.Application.Json)
-                setBody(event)
+                setBody(ob)
             }.body()
             response
         } catch (e: Exception) {
