@@ -69,43 +69,43 @@ fun SettingPage(
         SwitchItem(Icons.Filled.DarkMode, "Night Mode", isDarkMode, onDarkModeToggle)
 
         // Language Selector
-        Box(
-            modifier = Modifier.fillMaxWidth().clickable { showLanguageMenu = true }.padding(12.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Filled.Translate, contentDescription = "Language", tint = Color.Gray, modifier = Modifier.size(24.dp))
-                Spacer(modifier = Modifier.width(12.dp))
-                Text("Language", fontSize = 16.sp)
-                Spacer(modifier = Modifier.weight(1f))
-                Text(selectedLanguage, fontSize = 16.sp, color = Color.Gray)
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(Icons.Filled.ArrowForwardIos, contentDescription = "Select Language", tint = Color.Gray, modifier = Modifier.size(16.dp))
-            }
-        }
+        // Box(
+        //     modifier = Modifier.fillMaxWidth().clickable { showLanguageMenu = true }.padding(12.dp)
+        // ) {
+        //     Row(
+        //         modifier = Modifier.fillMaxWidth(),
+        //         verticalAlignment = Alignment.CenterVertically
+        //     ) {
+        //         Icon(Icons.Filled.Translate, contentDescription = "Language", tint = Color.Gray, modifier = Modifier.size(24.dp))
+        //         Spacer(modifier = Modifier.width(12.dp))
+        //         Text("Language", fontSize = 16.sp)
+        //         Spacer(modifier = Modifier.weight(1f))
+        //         Text(selectedLanguage, fontSize = 16.sp, color = Color.Gray)
+        //         Spacer(modifier = Modifier.width(8.dp))
+        //         Icon(Icons.Filled.ArrowForwardIos, contentDescription = "Select Language", tint = Color.Gray, modifier = Modifier.size(16.dp))
+        //     }
+        // }
 
         // Language Dropdown Menu
-        DropdownMenu(
-            expanded = showLanguageMenu,
-            onDismissRequest = { showLanguageMenu = false }
-        ) {
-            DropdownMenuItem(
-                text = { Text("English") },
-                onClick = {
-                    selectedLanguage = "English"
-                    showLanguageMenu = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Thai") },
-                onClick = {
-                    selectedLanguage = "Thai"
-                    showLanguageMenu = false
-                }
-            )
-        }
+        // DropdownMenu(
+        //     expanded = showLanguageMenu,
+        //     onDismissRequest = { showLanguageMenu = false }
+        // ) {
+        //     DropdownMenuItem(
+        //         text = { Text("English") },
+        //         onClick = {
+        //             selectedLanguage = "English"
+        //             showLanguageMenu = false
+        //         }
+        //     )
+        //     DropdownMenuItem(
+        //         text = { Text("Thai") },
+        //         onClick = {
+        //             selectedLanguage = "Thai"
+        //             showLanguageMenu = false
+        //         }
+        //     )
+        // }
 
         Spacer(modifier = Modifier.height(32.dp))
 

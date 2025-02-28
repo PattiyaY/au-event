@@ -33,9 +33,19 @@ class HomeViewModel : ViewModel() {
     private val _createResponse = MutableStateFlow<Event?>(null)
     val createResponse: StateFlow<Event?> = _createResponse
 
-
-    suspend fun getEventsByCategory(categoryName: String): GetEventResponse {
-        return apiService.getEventsByCategory(categoryName)
+    fun getEventsByCategory(categoryName: String) {
+        viewModelScope.launch {
+            try {
+                val result = apiService.getEventsByCategory(categoryName)
+                if (result.success) {
+                    _response.value = result.data
+                } else {
+                    _error.value = "Unknown error"
+                }
+            } catch (e: Exception) {
+                _error.value = "Error fetching getEventsByCategory: ${e.message}"
+            }
+        }
     }
 
     fun getAllEvents() {

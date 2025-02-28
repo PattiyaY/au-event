@@ -1,9 +1,12 @@
 package com.example.auevent.pages
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.net.Uri
+import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -149,12 +152,14 @@ fun CreatePage(modifier: Modifier = Modifier, homeViewModel: HomeViewModel, navC
 
                     homeViewModel.createEvent(event, selectedImageUri!!, context) { success ->
                         if (success) {
-                            println("HERE")
+                            Log.d("NotificationDebug", "Event created successfully. Sending notification.")
                             sendNotification(context, "Event Published", "Your event '$title' has been successfully published!")
 
                             navController.navigate("home") {
                                 popUpTo("home") { inclusive = true } // Removes create event from back stack
                             }
+                        } else {
+                            Log.e("NotificationDebug", "Event creation failed.")
                         }
                     }
                     showError = false
@@ -177,14 +182,20 @@ fun CreatePage(modifier: Modifier = Modifier, homeViewModel: HomeViewModel, navC
 @Composable
 fun ImagePickerDialog(showDialog: MutableState<Boolean>, onImageSelected: (Uri) -> Unit) {
     val context = LocalContext.current
-    val storageUtil = remember { StorageUtil() }
+
+    // State to store the temporary URI
     var tempImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    val getTempImageUri = {
-        val tempFile = File.createTempFile("temp_image", ".jpg", context.cacheDir).apply { createNewFile(); deleteOnExit() }
-        FileProvider.getUriForFile(context, "${context.packageName}.provider", tempFile).also { tempImageUri = it }
+    // Function to generate a temporary file URI
+    fun getTempImageUri(): Uri {
+        val tempFile = File.createTempFile("temp_image", ".jpg", context.cacheDir).apply {
+            createNewFile()
+            deleteOnExit()
+        }
+        return FileProvider.getUriForFile(context, "${context.packageName}.provider", tempFile)
     }
 
+    // Camera launcher
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success && tempImageUri != null) {
             onImageSelected(tempImageUri!!)
@@ -192,6 +203,7 @@ fun ImagePickerDialog(showDialog: MutableState<Boolean>, onImageSelected: (Uri) 
         }
     }
 
+    // Gallery launcher
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
             onImageSelected(it)
@@ -203,13 +215,39 @@ fun ImagePickerDialog(showDialog: MutableState<Boolean>, onImageSelected: (Uri) 
         title = { Text(text = "Pick an option") },
         text = {
             Column {
-                Button(onClick = { cameraLauncher.launch(getTempImageUri()) }) { Text(text = "Select Camera") }
+                Button(onClick = {
+                    tempImageUri = getTempImageUri() // Generate and store URI
+                    cameraLauncher.launch(tempImageUri!!) // Launch camera with the stored URI
+                }) {
+                    Text(text = "Take Photo")
+                }
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = { galleryLauncher.launch("image/*") }) { Text(text = "Select Gallery") }
+                Button(onClick = { galleryLauncher.launch("image/*") }) {
+                    Text(text = "Choose from Gallery")
+                }
             }
         },
         onDismissRequest = { showDialog.value = false },
         confirmButton = {},
         dismissButton = { TextButton(onClick = { showDialog.value = false }) { Text("Dismiss") } }
     )
+}
+
+@Composable
+fun RequestNotificationPermission() {
+    val context = LocalContext.current
+    val permissionState = remember { mutableStateOf(false) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted -> permissionState.value = granted }
+    )
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            permissionState.value = true // Auto-grant for Android 12 and below
+        }
+    }
 }
