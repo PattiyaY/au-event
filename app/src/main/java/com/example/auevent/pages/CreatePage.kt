@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
+import com.example.auevent.NotificationUtil
 import com.example.auevent.model.PostEvent
 import com.example.auevent.sendNotification
 import com.example.auevent.utils.StorageUtil
@@ -50,6 +51,9 @@ fun CreatePage(modifier: Modifier = Modifier, homeViewModel: HomeViewModel, navC
 
     val context = LocalContext.current
     val storageUtil = remember { StorageUtil() }
+
+    RequestNotificationPermission()
+
 
     val isFormComplete = title.isNotBlank() && description.isNotBlank() &&
             selectedCategory != null && selectedDate.value.isNotBlank() &&
@@ -153,7 +157,15 @@ fun CreatePage(modifier: Modifier = Modifier, homeViewModel: HomeViewModel, navC
                     homeViewModel.createEvent(event, selectedImageUri!!, context) { success ->
                         if (success) {
                             Log.d("NotificationDebug", "Event created successfully. Sending notification.")
-                            sendNotification(context, "Event Published", "Your event '$title' has been successfully published!")
+                            // Create notification channel (only needed once)
+                            NotificationUtil.createNotificationChannel(context)
+
+                            // Send notification
+                            NotificationUtil.sendNotification(
+                                context,
+                                "Event Created",
+                                "Your event '$title' has been successfully created!"
+                            )
 
                             navController.navigate("home") {
                                 popUpTo("home") { inclusive = true } // Removes create event from back stack

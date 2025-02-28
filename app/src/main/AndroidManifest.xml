@@ -9,7 +9,6 @@
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
-
     <application
         android:enableOnBackInvokedCallback="true"
         android:allowBackup="true"
@@ -45,6 +44,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+        <uses-library android:name="android.test.runner" />
 
     </application>
 
