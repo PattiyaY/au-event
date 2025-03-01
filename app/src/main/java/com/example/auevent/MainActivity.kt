@@ -42,6 +42,7 @@ import com.example.auevent.viewmodel.EventViewModel
 import com.example.auevent.viewmodel.HomeViewModel
 import com.example.auevent.viewmodel.SignInViewModel
 import com.google.android.gms.auth.api.identity.Identity
+import com.onesignal.OneSignal
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -54,6 +55,7 @@ class MainActivity : ComponentActivity() {
     }
     @SuppressLint("UnrememberedGetBackStackEntry", "CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
+//        OneSignal.initWithContext(this, "e89c57b7-9e20-4742-86d3-cdebc2e07caf")
 
         super.onCreate(savedInstanceState)
 

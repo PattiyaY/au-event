@@ -18,17 +18,20 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun CategoryEventsPage(navController: NavController, homeViewModel: HomeViewModel, categoryName: String) {
-    var events by remember { mutableStateOf<List<Event>>(emptyList()) }
+    val responses by homeViewModel.response.collectAsState()
+
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(categoryName) {
-        scope.launch {
-            val response = homeViewModel.getEventsByCategory(categoryName)
-            events = response.data
-        }
-    }
+    // LaunchedEffect(categoryName) {
+    //     scope.launch {
+    //         homeViewModel.getEventsByCategory(categoryName)
+    //     }
+    // }
 
-    println(events)
+    LaunchedEffect(categoryName) {
+        homeViewModel.getEventsByCategory(categoryName)
+        println("Fetching events for: $categoryName")
+    }
 
     Column(
         modifier = Modifier
@@ -42,7 +45,7 @@ fun CategoryEventsPage(navController: NavController, homeViewModel: HomeViewMode
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (events.isEmpty()) {
+        if (responses.isEmpty()) {
             Text("No events found for $categoryName", fontSize = 16.sp)
         } else {
             LazyVerticalGrid(
@@ -51,7 +54,7 @@ fun CategoryEventsPage(navController: NavController, homeViewModel: HomeViewMode
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(events) { event ->
+                items(responses) { event ->
                     EventItem(event, navController)
                 }
             }

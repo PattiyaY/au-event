@@ -10,7 +10,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddLocation
 import androidx.compose.material.icons.filled.Category
@@ -40,9 +42,6 @@ import com.example.auevent.model.UserData
 import com.example.auevent.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 
-// Event Data Model
-// data class Event(val title: String, val imageUrl: String)
-
 @Composable
 fun HomePage(
     modifier: Modifier = Modifier,
@@ -56,7 +55,12 @@ fun HomePage(
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp
+
+    // Scroll state for main content
+    val scrollState = rememberScrollState()
 
     // Use LaunchedEffect for composable-scoped coroutines
     LaunchedEffect(Unit) {
@@ -64,15 +68,13 @@ fun HomePage(
         homeViewModel.getTodaysEvents()
     }
 
-    println(events)
-
     ModalNavigationDrawer(
         drawerState = drawerState,
         scrimColor = Color.Transparent,
         drawerContent = {
             Box(
                 modifier = Modifier
-                    .width(screenWidth * 0.5f) // Open half of the screen
+                    .width(screenWidth * (if (isLandscape) 0.3f else 0.5f)) // Narrower drawer in landscape
                     .fillMaxHeight()
                     .background(Color.White)
                     .padding(16.dp)
@@ -98,6 +100,7 @@ fun HomePage(
             modifier = modifier
                 .fillMaxSize()
                 .padding(16.dp)
+                .then(if (!isLandscape) Modifier else Modifier.verticalScroll(scrollState))
         ) {
             // Top Bar
             Row(
@@ -126,36 +129,48 @@ fun HomePage(
                                 .size(40.dp)
                                 .clip(CircleShape)
                         )
-
                     }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Categories Section
-            // Text(text = "Category", fontSize = 20.sp)
-            //     LazyRow {
-            //         items(categories) { category ->
-            //             CategoryItem(category)
-            //         }
-            //     }
-            // Spacer(modifier = Modifier.height(8.dp))
-
-            // Events Sections
-            Text(text = "Today's Events", fontSize = 20.sp)
-            EventList(todaysEvents, navController)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "All Events", fontSize = 20.sp)
-            EventGrid(events, navController)
+            if (isLandscape) {
+                // Landscape layout - side by side sections
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Today's Events Section - takes 40% in landscape
+                    Column(modifier = Modifier.weight(0.4f)) {
+                        Text(text = "Today's Events", fontSize = 20.sp)
+                        EventListLandscape(todaysEvents, navController)
+                    }
+                    // All Events Section - takes 60% in landscape
+                    Column(modifier = Modifier.weight(0.6f)) {
+                        Text(text = "All Events", fontSize = 20.sp)
+                        EventGridLandscape(events, navController)
+                    }
+                }
+            } else {
+                // Portrait layout - stacked sections
+                Text(text = "Today's Events", fontSize = 20.sp)
+                EventList(todaysEvents, navController)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = "All Events", fontSize = 20.sp)
+                EventGrid(events, navController)
+            }
         }
     }
 }
 
 @Composable
 fun DrawerContent(userData: UserData?, onNavigate: (String) -> Unit) {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp
+
     Column(
         modifier = Modifier
-            .fillMaxSize(0.5f)
+            .fillMaxSize(if (isLandscape) 0.3f else 0.5f)
             .padding(16.dp)
     ) {
         // User Info
@@ -180,10 +195,6 @@ fun DrawerContent(userData: UserData?, onNavigate: (String) -> Unit) {
         DrawerItem("Category", Icons.Default.Category) { onNavigate("category") }
         DrawerItem("Events", Icons.Default.AddLocation) { onNavigate("event") }
         DrawerItem("Settings", Icons.Default.Settings) { onNavigate("settings") }
-//        Spacer(modifier = Modifier.weight(1f))
-
-        // Sign Out
-        // DrawerItem("Sign Out", Icons.Default.Logout) { /* Handle Sign Out */ }
     }
 }
 
@@ -200,7 +211,6 @@ fun DrawerItem(text: String, icon: ImageVector, onClick: () -> Unit) {
         Spacer(modifier = Modifier.width(10.dp))
         Text(text = text, fontSize = 18.sp)
     }
-//    Divider()
 }
 
 @Composable
@@ -210,7 +220,6 @@ fun CategoryItem(category: Category) {
             .padding(8.dp)
             .clip(CircleShape)
             .clickable { /* Add click event */ }
-//            .background(Color(0xFFFFF1E5))
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -223,28 +232,67 @@ fun CategoryItem(category: Category) {
     }
 }
 
+// Original EventList for portrait mode
 @Composable
-fun EventList(events: List<Event>, navController: NavController ) {
+fun EventList(events: List<Event>, navController: NavController) {
     LazyRow {
         items(events) { event ->
-            HomeEventItem(event,  navController)
+            HomeEventItem(event, navController)
         }
     }
 }
 
+// Landscape mode EventList
+@Composable
+fun EventListLandscape(events: List<Event>, navController: NavController) {
+    LazyRow {
+        items(events) { event ->
+            HomeEventItem(
+                event = event,
+                navController = navController,
+                modifier = Modifier.width(130.dp) // Slightly smaller for landscape
+            )
+        }
+    }
+}
+
+// Original EventGrid for portrait mode
 @Composable
 fun EventGrid(events: List<Event>, navController: NavController) {
     LazyVerticalGrid(columns = GridCells.Fixed(2)) {
         items(events.size) { index ->
-            HomeEventItem(events[index],  navController)
+            HomeEventItem(events[index], navController)
+        }
+    }
+}
+
+// Landscape mode EventGrid
+@Composable
+fun EventGridLandscape(events: List<Event>, navController: NavController) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3), // More columns in landscape
+        modifier = Modifier.height(250.dp) // Fixed height to fit in landscape
+    ) {
+        items(events.size) { index ->
+            HomeEventItem(
+                event = events[index],
+                navController = navController,
+                modifier = Modifier.width(120.dp) // Slightly smaller for landscape
+            )
         }
     }
 }
 
 @Composable
-fun HomeEventItem(event: Event,  navController: NavController) {
+fun HomeEventItem(
+    event: Event,
+    navController: NavController,
+    modifier: Modifier = Modifier
+) {
     Column(
-        modifier = Modifier.padding(8.dp).clickable { navController.navigate("eventDetail/${event._id}") },
+        modifier = modifier
+            .padding(8.dp)
+            .clickable { navController.navigate("eventDetail/${event._id}") },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AsyncImage(
@@ -252,7 +300,11 @@ fun HomeEventItem(event: Event,  navController: NavController) {
             contentDescription = event.name,
             modifier = Modifier.size(150.dp)
         )
-        Text(text = event.name, fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
+        Text(
+            text = event.name,
+            fontSize = 14.sp,
+            modifier = Modifier.padding(top = 4.dp)
+        )
     }
 }
 
@@ -264,16 +316,3 @@ val categories = listOf(
     Category("Health and Wellbeing", R.drawable.ic_health),
     Category("Hobbies and Passions", R.drawable.ic_hobbies)
 )
-
-
-// val todayEvents = listOf(
-//     Event("AU Christmas Celebration", "https://your-image-url.com/event1.jpg"),
-//     Event("AU Games 2024", "https://your-image-url.com/event2.jpg")
-// )
-//
-// val allEvents = listOf(
-//     Event("AU Freshly Night", "https://your-image-url.com/event3.jpg"),
-//     Event("AU Charming Loy Krathong", "https://your-image-url.com/event4.jpg"),
-//     Event("SLC Camp", "https://your-image-url.com/event5.jpg"),
-//     Event("AU Festival 2024", "https://your-image-url.com/event6.jpg")
-// )

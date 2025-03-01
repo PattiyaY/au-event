@@ -1,5 +1,6 @@
 package com.example.auevent.pages
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,85 +33,68 @@ fun SettingPage(
     userData: UserData?,
     onSignOut: () -> Unit
 ) {
-    var selectedLanguage by remember { mutableStateOf("English") }
-    var showLanguageMenu by remember { mutableStateOf(false) }
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     var isNotificationsEnabled by rememberSaveable { mutableStateOf(true) }
 
-    Column(
-        modifier = modifier.fillMaxSize().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (userData?.profilePictureUrl != null) {
-            // Profile Picture
-            Box(contentAlignment = Alignment.BottomEnd) {
-                AsyncImage(
-                    model = userData.profilePictureUrl,
-                    contentDescription = "Profile Picture",
-                    placeholder = painterResource(R.drawable.profile_pic),
-                    error = painterResource(R.drawable.profile_pic),
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                )
+    if (isLandscape) {
+        Row(
+            modifier = modifier.fillMaxSize().padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ProfileSection(userData)
+            Spacer(modifier = Modifier.width(32.dp))
+            SettingsOptions(isDarkMode, onDarkModeToggle, isNotificationsEnabled, onSignOut) {
+                isNotificationsEnabled = it
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Name Field
-        if(userData?.userName != null) {
-            SettingItem(Icons.Filled.Person, "Name", userData.userName)
+    } else {
+        Column(
+            modifier = modifier.fillMaxSize().padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            ProfileSection(userData)
+            Spacer(modifier = Modifier.height(16.dp))
+            SettingsOptions(isDarkMode, onDarkModeToggle, isNotificationsEnabled, onSignOut) {
+                isNotificationsEnabled = it
+            }
         }
+    }
+}
 
-        // Notifications Toggle
-        SwitchItem(Icons.Filled.Notifications, "Notifications", isNotificationsEnabled) {
-            isNotificationsEnabled = it
+@Composable
+fun ProfileSection(userData: UserData?) {
+    if (userData?.profilePictureUrl != null) {
+        Box(contentAlignment = Alignment.BottomEnd) {
+            AsyncImage(
+                model = userData.profilePictureUrl,
+                contentDescription = "Profile Picture",
+                placeholder = painterResource(R.drawable.profile_pic),
+                error = painterResource(R.drawable.profile_pic),
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+            )
         }
+    }
+}
 
-        // Night Mode Toggle
+@Composable
+fun SettingsOptions(
+    isDarkMode: Boolean,
+    onDarkModeToggle: (Boolean) -> Unit,
+    isNotificationsEnabled: Boolean,
+    onSignOut: () -> Unit,
+    onNotificationToggle: (Boolean) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         SwitchItem(Icons.Filled.DarkMode, "Night Mode", isDarkMode, onDarkModeToggle)
-
-        // Language Selector
-        Box(
-            modifier = Modifier.fillMaxWidth().clickable { showLanguageMenu = true }.padding(12.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Filled.Translate, contentDescription = "Language", tint = Color.Gray, modifier = Modifier.size(24.dp))
-                Spacer(modifier = Modifier.width(12.dp))
-                Text("Language", fontSize = 16.sp)
-                Spacer(modifier = Modifier.weight(1f))
-                Text(selectedLanguage, fontSize = 16.sp, color = Color.Gray)
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(Icons.Filled.ArrowForwardIos, contentDescription = "Select Language", tint = Color.Gray, modifier = Modifier.size(16.dp))
-            }
-        }
-
-        // Language Dropdown Menu
-        DropdownMenu(
-            expanded = showLanguageMenu,
-            onDismissRequest = { showLanguageMenu = false }
-        ) {
-            DropdownMenuItem(
-                text = { Text("English") },
-                onClick = {
-                    selectedLanguage = "English"
-                    showLanguageMenu = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Thai") },
-                onClick = {
-                    selectedLanguage = "Thai"
-                    showLanguageMenu = false
-                }
-            )
-        }
+        SwitchItem(Icons.Filled.Notifications, "Notifications", isNotificationsEnabled, onNotificationToggle)
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Sign Out Button
         Button(
             onClick = onSignOut,
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A1B9A)),
@@ -132,19 +117,5 @@ fun SwitchItem(icon: ImageVector, title: String, checkedState: Boolean, onChecke
         Text(title, fontSize = 16.sp)
         Spacer(modifier = Modifier.weight(1f))
         Switch(checked = checkedState, onCheckedChange = onCheckedChange)
-    }
-}
-
-@Composable
-fun SettingItem(icon: ImageVector, title: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icon, contentDescription = title, tint = Color.Gray, modifier = Modifier.size(24.dp))
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(title, fontSize = 16.sp)
-        Spacer(modifier = Modifier.weight(1f))
-        Text(value, fontSize = 16.sp, color = Color.Gray)
     }
 }

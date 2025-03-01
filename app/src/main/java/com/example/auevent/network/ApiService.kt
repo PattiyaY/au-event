@@ -16,9 +16,11 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 class ApiService {
-    private val baseUrl = "http://192.168.213.150:3000/api"
+    private val baseUrl = "http://192.168.1.49:3000/api"
 
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -31,8 +33,9 @@ class ApiService {
     }
 
     suspend fun getEventsByCategory(categoryName: String): GetEventResponse {
+        val encodedCategory = URLEncoder.encode(categoryName, StandardCharsets.UTF_8.toString())
         return try {
-            val response = client.get("$baseUrl/category?categoryName=$categoryName").body<GetEventResponse>()
+            val response = client.get("$baseUrl/category?categoryName=$encodedCategory").body<GetEventResponse>()
             response
         } catch (e: Exception) {
             println("Error fetching events: ${e.localizedMessage}")
